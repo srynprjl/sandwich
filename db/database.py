@@ -28,5 +28,4 @@ def create_initial_tables(con: sqlite3.Connection):
         try:
             cur.execute(sql)
         except sqlite3.Error as e:
-            # print("Error", e)
             continue

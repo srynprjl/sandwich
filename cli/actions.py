@@ -5,10 +5,7 @@ import subprocess
 from .parser import parse_arguments
 from controllers import category, projects
 
-
 args: argparse.Namespace = parse_arguments()
-
-
 def category_logics(con: sqlite3.Connection):
     match (args.action):
         case "add":

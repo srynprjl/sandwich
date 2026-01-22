@@ -1,5 +1,4 @@
 import sqlite3
-from db import database
 
 def category_exists(con: sqlite3.Connection, id: int = None, shorthand: str = None):
     if id is None and shorthand is None:

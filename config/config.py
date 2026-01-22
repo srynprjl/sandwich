@@ -1,6 +1,6 @@
 import os
 import json
-from variables import CONFIG_PATH
+from variables import CONFIG_PATH, DATABASE_PATH
 DEFAULT_CONFIG = {
     "default_tables": [
         {
@@ -24,7 +24,8 @@ DEFAULT_CONFIG = {
                 "FOREIGN KEY (id) REFERENCES categories(id))",
             ],
         },
-    ]
+    ],
+    "db_path": f"{DATABASE_PATH}"
 }
 
 def create_config():
