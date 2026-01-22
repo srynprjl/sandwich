@@ -1,23 +1,28 @@
 [
   {
     "id": 0,
-    "title": "Android Applications",
-    "shorthand": "android-apps",
+    "title": "Android Suite",
+    "shorthand": "android",
     "projects": [
       {
-        "name": "",
+        "name": "1",
         "description": "",
         "path": "",
         "completed": false
       },
-      {}
+      {
+        "name": "2",
+        "description": "",
+        "path": "",
+        "completed": false
+      }
     ]
   },
 
   {
     "id": 1,
     "title": "Linux Suite",
-    "shorthand": "linux-suite",
+    "shorthand": "linux",
     "projects": [
       {
         "name": "",
@@ -32,7 +37,7 @@
   {
     "id": 2,
     "title": "Application",
-    "shorthand": "applications",
+    "shorthand": "apps",
     "projects": [
       {
         "name": "",
@@ -47,7 +52,7 @@
   {
     "id": 3,
     "title": "Build your Own X",
-    "shorthand": "build-your-own-x",
+    "shorthand": "byox",
     "projects": [
       {
         "name": "",
