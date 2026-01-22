@@ -14,7 +14,6 @@ def connect_db(db_name: str):
       create_database_location()
       connect_db(db_name)
 
-
 def close_db(con: sqlite3.Connection):
     con.close()
 

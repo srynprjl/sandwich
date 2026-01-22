@@ -1,5 +1,5 @@
 from db import database
-from logic import category
+from controllers import category
 import json
 
 def parse_json():
