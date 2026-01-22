@@ -6,12 +6,12 @@ def category_exists(con: sqlite3.Connection, id: int = None, shorthand: str = No
     if id is None and shorthand is None:
         return "Please insert at least the id or the shorthand"
     elif id and shorthand:
-        sql = """SELECT id, name, shorthand FROM categories WHERE id={id} AND shorthand={shorthand}"""
+        sql = f"""SELECT id, name, shorthand FROM categories WHERE id={id} AND shorthand={shorthand}"""
     elif id:
-        sql = """SELECT id, name, shorthand FROM categories WHERE id={id}"""
+        sql = f"""SELECT id, name, shorthand FROM categories WHERE id={id}"""
     elif shorthand:
         sql = (
-            """SELECT id, name, shorthand FROM categories WHERE shorthand={shorthand}"""
+            f"""SELECT id, name, shorthand FROM categories WHERE shorthand={shorthand}"""
         )
     else:
         return "This should never happen ig"
@@ -61,6 +61,9 @@ def update_category(
     sql_piece.strip(",")
     if data:
         sql = f"""UPDATE categories SET {sql_piece} WHERE id={data[0]}"""
+        cur.execute(sql)
+        con.commit()
+        return "Success."
     else:
         return "Failed"
 
