@@ -29,7 +29,7 @@ def get_project_field_value(con: sqlite3.Connection, id: int, field: str):
     if not exists:
         return {"message": "Something went wrong!", "data": None, "status": 500}
 
-    data = exists["data"][map_v.get(field)]
+    data = exists["data"][map_v.get(field)] if exists["data"] else None
     if data:
         return {
             "message": f"The {field} successfully fetched",
@@ -167,10 +167,10 @@ def update_project(con: sqlite3.Connection, id: int, new_data: dict, catId: int)
 
     columns = ""
     parsed_data = update_schema_check(new_data)
-
     if not parsed_data["data"]:
         return parsed_data
-
+    if parsed_data["data"].get("category", None) is None:
+        parsed_data["data"]["category"] = catId
     if not category_exists(con, parsed_data["data"]["category"]):
         parsed_data["data"]["category"] = catId
 
@@ -235,17 +235,21 @@ def list_all_projects(con: sqlite3.Connection, category: int):
     return {"message": "The project successfully fetched", "data": data, "status": 201}
 
 
-def get_completed_projects(con: sqlite3.Connection):
-    sql = """SELECT * from projects WHERE completed=True"""
-    cur = con.cursor()
-    cur.execute(sql)
-    data = cur.fetchall()
-    return {"message": "The project successfully fetched", "data": data, "status": 201}
+def get_projects_cf(con: sqlite3.Connection, query: dict):
+    query_items = [
+        f"{k}={int(bool(v))}"
+        for k, v in query.items()
+        if (k in ("favorite", "completed") and v in ("True", "False"))
+    ]
 
-
-def get_fav_projects(con: sqlite3.Connection):
-    sql = """SELECT * from projects WHERE favorite=True"""
+    where_clause = " AND ".join(query_items)
+    sql = f"""SELECT * from projects WHERE {where_clause}"""
+    print(sql)
     cur = con.cursor()
-    cur.execute(sql)
-    data = cur.fetchall()
+    try:
+        cur.execute(sql)
+        data = cur.fetchall()
+    except sqlite3.Error as e:
+        print(e)
+        return {"message": "Something went wrong!", "data": None, "status": 201}
     return {"message": "The project successfully fetched", "data": data, "status": 201}

@@ -70,11 +70,13 @@ def parse_arguments():
     edit_proj.add_argument("id", type=int)
 
     parser.add_argument(
-        "--completed", nargs="?", const="all", help="List completed projects"
+        "--completed", nargs="?", const="True", help="List completed projects"
     )
     parser.add_argument(
-        "--favourite", nargs="?", const="all", help="List favourite projects"
+        "--favourite", nargs="?", const="True", help="List favourite projects"
     )
+
+    parser.add_argument("--web", nargs="?", const="on", help="Start a webserver")
 
     args = parser.parse_args()
 

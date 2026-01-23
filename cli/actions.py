@@ -4,6 +4,11 @@ import shutil
 import sqlite3
 import subprocess
 
+from flask.app import Flask
+
+from api.app import run_server
+from api.routes.projects import project
+from config.variables import PORT
 from controllers import category, projects
 
 from .parser import parse_arguments
@@ -164,25 +169,19 @@ def project_logics(con: sqlite3.Connection):
 
 
 def cli(con: sqlite3.Connection):
+    if args.web == "on":
+        run_server(PORT)
     if args.command == "category":
         category_logics(con)
     elif args.command == "project":
         project_logics(con)
 
-    if args.completed == "all":
-        coms = projects.get_completed_projects(con=con)
-        data = coms["data"]
+    if args.completed or args.favourite:
+        dict = {"completed": args.completed, "favorite": args.favourite}
+        query = {k: v for k, v in dict.items() if v == "True"}
+        data = projects.get_projects_cf(con, query)
         print("ID || Name || Completed || Favorite || Description")
-        for id, name, description, completed, favorite, *rest in data:
-            fav = True if favorite == 1 else False
-            com = True if completed == 1 else False
-            print(f" {id} ||  {name} || {com} || {fav} || {description}")
-
-    if args.favourite == "all":
-        fav = projects.get_fav_projects(con=con)
-        data = fav["data"]
-        print("ID || Name || Completed || Favorite || Description")
-        for id, name, description, completed, favorite, *rest in data:
+        for id, name, description, completed, favorite, *rest in data["data"]:
             fav = True if favorite == 1 else False
             com = True if completed == 1 else False
             print(f" {id} ||  {name} || {com} || {fav} || {description}")

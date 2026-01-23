@@ -15,9 +15,9 @@ def connect_db(db_name: str):
             os.path.join(DATABASE_PATH, f"{db_name}.db"), check_same_thread=False
         )
         return con
-    except:
+    except sqlite3.Error:
         create_database_location()
-        connect_db(db_name)
+        return connect_db(db_name)
 
 
 def close_db(con: sqlite3.Connection):

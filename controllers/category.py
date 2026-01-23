@@ -1,7 +1,9 @@
 import sqlite3
 
 
-def category_exists(con: sqlite3.Connection, id: int = None, shorthand: str = None):
+def category_exists(
+    con: sqlite3.Connection, id: (int | None) = None, shorthand: (str | None) = None
+):
     if id is None and shorthand is None:
         return {
             "message": "Please insert at least the id or the shorthand",
@@ -38,20 +40,24 @@ def category_exists(con: sqlite3.Connection, id: int = None, shorthand: str = No
 
 
 def add_category(
-    con: sqlite3.Connection, name: str, shorthand: str, description: str = None
+    con: sqlite3.Connection, name: str, shorthand: str, description: (str | None) = None
 ):
     sql = f"""INSERT INTO categories(name, shorthand) VALUES("{name}", "{shorthand}")"""
     cur = con.cursor()
     try:
         cur.execute(sql)
         con.commit()
-    except:
-        pass
+    except sqlite3.Error:
+        return {"message": "Something went wrong", "status": 500}
     return {"message": "Category successfully created.", "status": 201}
 
 
-def remove_category(con: sqlite3.Connection, id: int = None, shorthand: str = None):
+def remove_category(
+    con: sqlite3.Connection, id: (int | None) = None, shorthand: (str | None) = None
+):
     data = category_exists(con, id, shorthand)
+    if not data:
+        return {"message": "Something went wrong", "status": 500}
     cur = con.cursor()
     if data["status"] not in (404, 400):
         cur.execute(f"""DELETE FROM categories WHERE id={data["data"][0]};""")
@@ -64,15 +70,17 @@ def remove_category(con: sqlite3.Connection, id: int = None, shorthand: str = No
 def update_category(
     con: sqlite3.Connection,
     new_data: dict[str, str],
-    id: int = None,
-    shorthand: str = None,
+    id: (int | None) = None,
+    shorthand: (str | None) = None,
 ):
     exists = category_exists(con, id, shorthand)
+    if not exists:
+        return {"message": "Something went wrong", "status": 500}
     data = exists["data"]
     cur = con.cursor()
     sql_piece = ""
     for k, v in new_data.items():
-        if type(v) == str:
+        if type(v) is str:
             v = f"'{v}'"
         sql_piece += f"'{k}' = {v},"
     sql_piece = sql_piece.strip(",")
@@ -94,8 +102,12 @@ def get_all_categories(con: sqlite3.Connection):
     return {"message": "Data fetched successfully", "data": data, "status": 201}
 
 
-def get_category(con: sqlite3.Connection, id: int = None, shorthand: str = None):
+def get_category(
+    con: sqlite3.Connection, id: (int | None) = None, shorthand: (str | None) = None
+):
     exists = category_exists(con, id, shorthand)
+    if not exists:
+        return {"message": "Something went wrong", "status": 500}
     data = exists["data"]
     if exists:
         cur = con.cursor()

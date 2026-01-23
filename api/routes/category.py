@@ -8,6 +8,7 @@ from db.database import db
 con = db()
 categories = Blueprint("categories", __name__)
 
+
 @categories.get("/api/category/")
 def get_all_category_api():
     data = category.get_all_categories(con=con)

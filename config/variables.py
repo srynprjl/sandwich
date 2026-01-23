@@ -8,3 +8,4 @@ USER = os.environ.get("USER")
 
 CONFIG_PATH = f"/home/{USER}/.config/{AUTHOR}/{PROJECT_NAME}"
 DATABASE_PATH = f"/home/{USER}/.local/share/{AUTHOR}/{PROJECT_NAME}"
+PORT = 5000

@@ -10,7 +10,7 @@ def main():
     con = database.db()
     database.create_initial_tables(con=con)
     if len(sys.argv) == 1:
-        run_server(5000)
+        # run_server(5000)
         pass
     else:
         cli(con)
