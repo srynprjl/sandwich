@@ -39,13 +39,13 @@ def category_logics(con: sqlite3.Connection):
             if argument is None:
                 categories = category.get_all_categories(con)
                 data = categories["data"]
-                print(f"ID || Name")
+                print("ID || Name")
                 for id, name, shorthand in data:
                     print(f" {id} ||  {name}")
             else:
                 project_list = projects.list_all_projects(con=con, category=argument)
                 data = project_list["data"]
-                print(f"ID || Name || Completed || Favorite || Description")
+                print("ID || Name || Completed || Favorite || Description")
                 for id, name, description, completed, favorite, *rest in data:
                     fav = True if favorite == 1 else False
                     com = True if completed == 1 else False
@@ -78,7 +78,8 @@ def project_logics(con: sqlite3.Connection):
 
         case "delete":
             id = args.id
-            projects.delete_project(con=con, id=id)
+            catVal = projects.get_project_field_value(con, args.id, "category")
+            projects.delete_project(con=con, id=id, catId=catVal["data"])
 
         case "update":
             data = {
@@ -89,13 +90,19 @@ def project_logics(con: sqlite3.Connection):
                 "favorite": args.favourite,
                 "completed": args.complete,
             }
+            catVal = projects.get_project_field_value(con, args.id, "category")
             data = {k: v for k, v in data.items() if v is not None}
-            print(data)
-            projects.update_project(con, id=args.id, new_data=data)
+            projects.update_project(
+                con, id=args.id, new_data=data, catId=catVal["data"]
+            )
 
         case "view":
             id = args.id
-            project = projects.get_project(con=con, id=id)
+            catVal = projects.get_project_field_value(con, args.id, "category")
+            project = projects.get_project(con=con, id=id, catId=catVal["data"])
+            if not project["data"]:
+                print(f"{project['message']}")
+                return
             fav = True if project["data"][4] == 1 else False
             com = True if project["data"][3] == 1 else False
             print(f"ID -> {project['data'][0]} ")
@@ -107,17 +114,25 @@ def project_logics(con: sqlite3.Connection):
 
         case "favourite":
             id = args.id
-            project = projects.get_project(con=con, id=id)
-            fav = 0 if project[4] == 1 else 1
-            projects.update_project(con=con, id=id, new_data={"favorite": fav})
-            pass
+            catVal = projects.get_project_field_value(con, args.id, "category")
+            fav_value = projects.get_project_field_value(
+                con=con, id=id, field="favorite"
+            )
+            fav = 0 if fav_value == 1 else 1
+            projects.update_project(
+                con=con, id=id, new_data={"favorite": fav}, catId=catVal["data"]
+            )
 
         case "complete":
             id = args.id
-            project = projects.get_project(con=con, id=id)
-            com = 0 if project[3] == 1 else 1
-            projects.update_project(con=con, id=id, new_data={"completed": com})
-            pass
+            catVal = projects.get_project_field_value(con, args.id, "category")
+            completed_val = projects.get_project_field_value(
+                con=con, id=id, field="completed"
+            )
+            com = 0 if completed_val == 1 else 1
+            projects.update_project(
+                con=con, id=id, new_data={"completed": com}, catId=catVal["data"]
+            )
         case _:
             sub_action = next(
                 a for a in parser._actions if isinstance(a, argparse._SubParsersAction)
@@ -128,6 +143,9 @@ def project_logics(con: sqlite3.Connection):
         if args.editor:
             id = args.id
             path = projects.get_project_field_value(con=con, id=id, field="path")
+            if not path["data"]:
+                print(path["message"])
+                return
             match args.editor:
                 case "code":
                     executable = shutil.which("code")
@@ -135,12 +153,12 @@ def project_logics(con: sqlite3.Connection):
                     executable = shutil.which("zeditor")
                 case "nvim":
                     executable = shutil.which("nvim")
-                case "default":
+                case _:
                     executable = os.environ.get("EDITOR", "vi")
-        if executable:
-            subprocess.run([executable, path])
-        else:
-            print(f"Editor '{executable}' not found.")
+            if executable:
+                subprocess.run([executable, path["data"]])
+            else:
+                print(f"Editor '{executable}' not found.")
     except AttributeError:
         pass
 
@@ -154,7 +172,7 @@ def cli(con: sqlite3.Connection):
     if args.completed == "all":
         coms = projects.get_completed_projects(con=con)
         data = coms["data"]
-        print(f"ID || Name || Completed || Favorite || Description")
+        print("ID || Name || Completed || Favorite || Description")
         for id, name, description, completed, favorite, *rest in data:
             fav = True if favorite == 1 else False
             com = True if completed == 1 else False
@@ -163,7 +181,7 @@ def cli(con: sqlite3.Connection):
     if args.favourite == "all":
         fav = projects.get_fav_projects(con=con)
         data = fav["data"]
-        print(f"ID || Name || Completed || Favorite || Description")
+        print("ID || Name || Completed || Favorite || Description")
         for id, name, description, completed, favorite, *rest in data:
             fav = True if favorite == 1 else False
             com = True if completed == 1 else False

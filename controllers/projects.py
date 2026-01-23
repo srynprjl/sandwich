@@ -27,7 +27,7 @@ def get_project_field_value(con: sqlite3.Connection, id: int, field: str):
     }
     exists = project_exists(con, id)
     if not exists:
-        return {"message": "Something went wrong!", "status": 500}
+        return {"message": "Something went wrong!", "data": None, "status": 500}
 
     data = exists["data"][map_v.get(field)]
     if data:
@@ -193,7 +193,7 @@ def get_project(con: sqlite3.Connection, id: int, catId: int):
     catExists = category_exists(con, catId)
     exists = project_exists(con, id)
     if catExists is None or exists is None:
-        return {"message": "Something went wrong!", "status": 500}
+        return {"message": "Something went wrong!", "data": None, "status": 500}
     if catExists["status"] == 404:
         return {"message": "The category doesn't exist", "data": None, "status": 404}
     if exists["status"] == 404:
@@ -212,6 +212,8 @@ def get_project(con: sqlite3.Connection, id: int, catId: int):
             "data": data,
             "status": 201,
         }
+    else:
+        return {"message": "Something went wrong!", "data": None, "status": 500}
 
 
 def list_all_projects(con: sqlite3.Connection, category: int):
