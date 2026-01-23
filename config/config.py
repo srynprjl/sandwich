@@ -1,6 +1,8 @@
-import os
 import json
+import os
+
 from variables import CONFIG_PATH, DATABASE_PATH
+
 DEFAULT_CONFIG = {
     "default_tables": [
         {
@@ -25,24 +27,26 @@ DEFAULT_CONFIG = {
             ],
         },
     ],
-    "db_path": f"{DATABASE_PATH}"
+    "db_path": f"{DATABASE_PATH}",
 }
 
-def create_config():
-  if(not os.path.isdir(CONFIG_PATH)):
-    os.mkdir(CONFIG_PATH)
 
-  if(not os.path.exists(os.path.join(CONFIG_PATH, "config.json"))):
-    with open(os.path.join(CONFIG_PATH, "config.json"), "w") as f:
-      json.dump(DEFAULT_CONFIG, f)
+def create_config():
+    if not os.path.isdir(CONFIG_PATH):
+        os.mkdir(CONFIG_PATH)
+
+    if not os.path.exists(os.path.join(CONFIG_PATH, "config.json")):
+        with open(os.path.join(CONFIG_PATH, "config.json"), "w") as f:
+            json.dump(DEFAULT_CONFIG, f)
+
 
 def read_config():
-  try:
-    with open(os.path.join(CONFIG_PATH, "config.json"), "r") as f:
-      config = json.load(f)
-      return config
-  except FileNotFoundError:
-    create_config()
-    read_config()
-  except json.JSONDecodeError:
-    print("JSON File cannot be decoded")
+    try:
+        with open(os.path.join(CONFIG_PATH, "config.json"), "r") as f:
+            config = json.load(f)
+            return config
+    except FileNotFoundError:
+        create_config()
+        read_config()
+    except json.JSONDecodeError:
+        print("JSON File cannot be decoded")

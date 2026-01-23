@@ -1,6 +1,7 @@
 import os
-PROJECT_NAME="sandwich"
-AUTHOR="sysnefo"
+
+PROJECT_NAME = "sandwich"
+AUTHOR = "sysnefo"
 USER = os.environ.get("USER")
 # XDG_CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME")
 # XDG_DATA_HOME = os.environ.get("XDG_DATA_HOME")

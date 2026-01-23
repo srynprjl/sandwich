@@ -1,14 +1,18 @@
 import argparse
-import sqlite3
 import os
-import subprocess
 import shutil
-from .parser import parse_arguments
+import sqlite3
+import subprocess
+
 from controllers import category, projects
 
+from .parser import parse_arguments
+
 parser, args = parse_arguments()
+
+
 def category_logics(con: sqlite3.Connection):
-    match (args.action):
+    match args.action:
         case "add":
             name = args.name
             shorthand = args.shorthand
@@ -54,7 +58,7 @@ def category_logics(con: sqlite3.Connection):
 
 
 def project_logics(con: sqlite3.Connection):
-    match (args.action):
+    match args.action:
         case "add":
             name = args.name
             description = args.description
@@ -94,10 +98,10 @@ def project_logics(con: sqlite3.Connection):
             project = projects.get_project(con=con, id=id)
             fav = True if project["data"][4] == 1 else False
             com = True if project["data"][3] == 1 else False
-            print(f"ID -> {project["data"][0]} ")
-            print(f"Name -> {project["data"][1]}")
-            print(f"Description -> {project["data"][2]}")
-            print(f"Path -> {project["data"][5]}")
+            print(f"ID -> {project['data'][0]} ")
+            print(f"Name -> {project['data'][1]}")
+            print(f"Description -> {project['data'][2]}")
+            print(f"Path -> {project['data'][5]}")
             print(f"Favorite -> {fav}")
             print(f"Complete -> {com}")
 
@@ -121,11 +125,10 @@ def project_logics(con: sqlite3.Connection):
             sub_action.choices["project"].print_help()
 
     try:
-
         if args.editor:
             id = args.id
             path = projects.get_project_field_value(con=con, id=id, field="path")
-            match (args.editor):
+            match args.editor:
                 case "code":
                     executable = shutil.which("code")
                 case "zed":
@@ -150,12 +153,18 @@ def cli(con: sqlite3.Connection):
 
     if args.completed == "all":
         coms = projects.get_completed_projects(con=con)
-        print(f"ID || Name")
-        for id, name, *rest in coms:
-            print(f" {id} ||  {name}")
+        data = coms["data"]
+        print(f"ID || Name || Completed || Favorite || Description")
+        for id, name, description, completed, favorite, *rest in data:
+            fav = True if favorite == 1 else False
+            com = True if completed == 1 else False
+            print(f" {id} ||  {name} || {com} || {fav} || {description}")
 
     if args.favourite == "all":
         fav = projects.get_fav_projects(con=con)
-        print(f"ID || Name")
-        for id, name, *rest in fav:
-            print(f" {id} ||  {name}")
+        data = fav["data"]
+        print(f"ID || Name || Completed || Favorite || Description")
+        for id, name, description, completed, favorite, *rest in data:
+            fav = True if favorite == 1 else False
+            com = True if completed == 1 else False
+            print(f" {id} ||  {name} || {com} || {fav} || {description}")

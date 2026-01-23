@@ -1,18 +1,24 @@
-import sqlite3
 import os
+import sqlite3
+
 from config.variables import DATABASE_PATH
 
+
 def create_database_location():
-  if(not os.path.isdir(DATABASE_PATH)):
-    os.makedirs(DATABASE_PATH, exist_ok=True)
+    if not os.path.isdir(DATABASE_PATH):
+        os.makedirs(DATABASE_PATH, exist_ok=True)
+
 
 def connect_db(db_name: str):
     try:
-      con = sqlite3.connect(os.path.join(DATABASE_PATH, f"{db_name}.db"))
-      return con
+        con = sqlite3.connect(
+            os.path.join(DATABASE_PATH, f"{db_name}.db"), check_same_thread=False
+        )
+        return con
     except:
-      create_database_location()
-      connect_db(db_name)
+        create_database_location()
+        connect_db(db_name)
+
 
 def close_db(con: sqlite3.Connection):
     con.close()
@@ -29,3 +35,8 @@ def create_initial_tables(con: sqlite3.Connection):
             cur.execute(sql)
         except sqlite3.Error as e:
             continue
+
+
+def db():
+    con = connect_db("database")
+    return con

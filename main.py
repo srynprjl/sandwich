@@ -1,11 +1,20 @@
-# from test import crud_test
-# from controllers import projects
-from db import database
+import sys
+
 from cli.actions import cli
+from db import database
+
+
 def main():
-    con = database.connect_db("database")
+    from api.app import run_server
+
+    con = database.db()
     database.create_initial_tables(con=con)
-    cli(con)
+    if len(sys.argv) == 1:
+        run_server(5000)
+        pass
+    else:
+        cli(con)
+
 
 if __name__ == "__main__":
     main()
