@@ -6,7 +6,6 @@ from db import database
 
 def main():
     from api.app import run_server
-
     con = database.db()
     database.create_initial_tables(con=con)
     if len(sys.argv) == 1:
