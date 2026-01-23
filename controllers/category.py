@@ -2,22 +2,27 @@ import sqlite3
 
 def category_exists(con: sqlite3.Connection, id: int = None, shorthand: str = None):
     if id is None and shorthand is None:
-        return "Please insert at least the id or the shorthand"
-    elif id and shorthand:
-        sql = f"""SELECT id, name, shorthand FROM categories WHERE id={id} AND shorthand={shorthand}"""
-    elif id:
-        sql = f"""SELECT id, name, shorthand FROM categories WHERE id={id}"""
-    elif shorthand:
-        sql = (
-            f"""SELECT id, name, shorthand FROM categories WHERE shorthand={shorthand}"""
-        )
-    else:
-        return "This should never happen ig"
-    cur = con.cursor()
-    cur.execute(sql)
-    data = cur.fetchone()
-    return data if data else None
+      return {"message": "Please insert at least the id or the shorthand", "data": None, "status": 400}
 
+    filters = []
+    params = []
+    if id is not None:
+        filters.append("id = ?")
+        params.append(id)
+
+    if shorthand is not None:
+        filters.append("shorthand = '?'")
+        params.append(shorthand)
+
+    where_clause = " AND ".join(filters)
+    sql = f"SELECT id, name, shorthand FROM categories WHERE {where_clause}"
+    cur = con.cursor()
+    cur.execute(sql, params)
+    data = cur.fetchone()
+    returnValue = data if data else None
+    messageValue = "exists" if data else "doesn't exist"
+    status = 200 if data else 404
+    return {"message": f"The category {messageValue}", "data": returnValue, "status": status}
 
 def add_category(
     con: sqlite3.Connection, name: str, shorthand: str, description: str = None
@@ -29,8 +34,7 @@ def add_category(
         con.commit()
     except:
         pass
-    return f"Category {name} successfully added."
-
+    return {"message": f"Category successfully created.", "status": 201}
 
 def remove_category(con: sqlite3.Connection, id: int = None, shorthand: str = None):
     data = category_exists(con, id, shorthand)
@@ -39,10 +43,9 @@ def remove_category(con: sqlite3.Connection, id: int = None, shorthand: str = No
         print(data)
         cur.execute(f"""DELETE FROM categories WHERE id={data[0]};""")
         con.commit()
-        print("Successfully deleted")
     else:
-        return f"Category {id} not found"
-    return f"Category {id} successfully deleted. "
+        return {"message": f"Category {id} not found", "status": 404}
+    return {"message": f"Category {id} successfully deleted", "status": 201}
 
 
 def update_category(
@@ -51,7 +54,8 @@ def update_category(
     id: int = None,
     shorthand: str = None,
 ):
-    data = category_exists(con, id, shorthand)
+    exists = category_exists(con, id, shorthand)
+    data = exists["data"]
     cur = con.cursor()
     sql_piece = ""
     for k, v in new_data.items():
@@ -64,10 +68,9 @@ def update_category(
         sql = f"""UPDATE categories SET {sql_piece} WHERE id={data[0]}"""
         cur.execute(sql)
         con.commit()
-        return "Success."
+        return {"message": "Data successfully updated.", "status": 201}
     else:
-        return "Failed"
-
+        return {"message": "Data not found", "status": 404}
 
 def get_all_categories(con: sqlite3.Connection):
     sql = """SELECT * from categories"""
@@ -75,13 +78,16 @@ def get_all_categories(con: sqlite3.Connection):
     cur.execute(sql)
     con.commit()
     data = cur.fetchall()
-    return data
+    return {"message": "Data fetched successfully", "data": data, "status": 201}
 
 
 def get_category(con: sqlite3.Connection, id: int = None, shorthand: str = None):
     exists = category_exists(con, id, shorthand)
+    data = exists["data"]
     if exists:
         cur = con.cursor()
-        cur.execute(f"""SELECT * from categories WHERE id={exists[0]}""")
+        cur.execute(f"""SELECT * from categories WHERE id={data[0]}""")
+        return {"message": "Data fetched successfully", "data": data, "status": 201}
     else:
-        return "BHAAAK!! No categories found"
+        return {"message": "Data fetched successfully", "data": data, "status": 201}
+
