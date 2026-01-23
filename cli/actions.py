@@ -5,8 +5,8 @@ import subprocess
 import shutil
 from .parser import parse_arguments
 from controllers import category, projects
-args: argparse.Namespace = parse_arguments()
 
+parser, args = parse_arguments()
 def category_logics(con: sqlite3.Connection):
     match (args.action):
         case "add":
@@ -46,6 +46,11 @@ def category_logics(con: sqlite3.Connection):
                     fav = True if favorite == 1 else False
                     com = True if completed == 1 else False
                     print(f" {id} ||  {name} || {com} || {fav} || {description}")
+        case _:
+            sub_action = next(
+                a for a in parser._actions if isinstance(a, argparse._SubParsersAction)
+            )
+            sub_action.choices["category"].print_help()
 
 
 def project_logics(con: sqlite3.Connection):
@@ -109,6 +114,11 @@ def project_logics(con: sqlite3.Connection):
             com = 0 if project[3] == 1 else 1
             projects.update_project(con=con, id=id, new_data={"completed": com})
             pass
+        case _:
+            sub_action = next(
+                a for a in parser._actions if isinstance(a, argparse._SubParsersAction)
+            )
+            sub_action.choices["project"].print_help()
 
     try:
 
@@ -117,7 +127,7 @@ def project_logics(con: sqlite3.Connection):
             path = projects.get_project_field_value(con=con, id=id, field="path")
             match (args.editor):
                 case "code":
-                   executable = shutil.which("code")
+                    executable = shutil.which("code")
                 case "zed":
                     executable = shutil.which("zeditor")
                 case "nvim":
