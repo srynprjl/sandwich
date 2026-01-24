@@ -49,6 +49,7 @@ def schema_check(data: dict):
     keys = set(data.keys())
     if not required_fields.issubset(keys):
         return None
+
     default_values = {
         "name": "",
         "description": "",
@@ -61,7 +62,9 @@ def schema_check(data: dict):
     key_fields = ["name", "description", "completed", "favorite", "path", "category"]
     new_data = {}
     for key in key_fields:
-        new_data[key] = data.get(key, default_values[key])
+        new_data[key] = (
+            data.get(key) if data.get(key) is not None else default_values[key]
+        )
     return new_data
 
 
@@ -97,6 +100,8 @@ def add_project(con: sqlite3.Connection, project_data: dict):
         values += f"{value}, "
     values = values.strip().strip(",")
     query = f"{sql}({values})"
+    print(query)
+    # error handling
     cur.execute(query)
     con.commit()
     return {"message": "The project successfully added", "status": 201}
