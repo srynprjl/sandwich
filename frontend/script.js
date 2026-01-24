@@ -77,6 +77,6 @@ project_btn.addEventListener('click', async (e) => {
     }
     const result = await response.json();
     console.log(result)
-    msg.innerText = result.message
+    msg.innerText = `${result.message} || ${data.name}`
   }
 })

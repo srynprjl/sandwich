@@ -1,6 +1,6 @@
 import sqlite3
 
-from .category import category_exists
+from .category import category_exists, get_category
 
 
 def get_project_field_value(con: sqlite3.Connection, id: int, field: str):
@@ -100,10 +100,12 @@ def add_project(con: sqlite3.Connection, project_data: dict):
         values += f"{value}, "
     values = values.strip().strip(",")
     query = f"{sql}({values})"
-    print(query)
-    # error handling
-    cur.execute(query)
-    con.commit()
+    # print(query)
+    try:
+        cur.execute(query)
+        con.commit()
+    except sqlite3.Error as e:
+        return {"message": e, "data": None, "status": 201}
     return {"message": "The project successfully added", "status": 201}
 
 
@@ -146,7 +148,6 @@ def update_schema_check(data: dict):
         "category",
     )
     new_dict = {k: v for k, v in data.items() if k in allowed_keys}
-    print(new_dict)
     if new_dict == {}:
         return {"message": "No field found to update", "data": None, "status": 404}
 
@@ -210,7 +211,8 @@ def get_project(con: sqlite3.Connection, id: int, catId: int):
             "data": None,
             "status": 404,
         }
-    data = exists["data"]
+    data = list(exists["data"])
+    data[6] = get_category(con, id=catValue["data"])["data"][1]
     if data:
         return {
             "message": "The project successfully fetched",
@@ -249,7 +251,6 @@ def get_projects_cf(con: sqlite3.Connection, query: dict):
 
     where_clause = " AND ".join(query_items)
     sql = f"""SELECT * from projects WHERE {where_clause}"""
-    print(sql)
     cur = con.cursor()
     try:
         cur.execute(sql)

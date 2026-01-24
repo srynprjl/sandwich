@@ -1,48 +1,66 @@
 <!doctype html>
 <html>
+  <head>
+    <title>Sandwich - Basic Frontend Implementation</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
 
-<head>
-  <title>Sandwich - Basic Frontend Implementation</title>
-  <link rel="stylesheet" href="./style.css" />
-</head>
-
-<body>
-  <div class="heading">
-    <h1>Sandwich - Project Management Software</h1>
-  </div>
-  <div class="error" id="msg"></div>
-  <div class="flex-container main-container">
-    <div class="create-category">
-      <h2>Create a Category</h2>
-      <form class="">
-        <label>Name:<br />
-          <input type="text" id="category-name" name="category-name" /></label><br />
-        <label>Shorthand:<br />
-          <input type="text" id="category-sh" name="category-sh" /></label><br />
-        <input type="submit" id="category-submit" />
-      </form>
+  <body>
+    <div class="heading">
+      <h1>Sandwich - Project Management Software</h1>
     </div>
-    <div class="create-project">
-      <h2>Create a Project</h2>
-      <form class="">
-        <label>Category: <br /><select id="category-select">
-
-        </select></label>
-        <label>Name:<br />
-          <input type="text" id="project-name" name="project-name" /></label><br />
-        <label>Description:<br />
-          <textarea id="project-description" name="project-description"></textarea></label><br />
-        <label>Path: <br /><input type="text" id="project-path" name="project-path" /><br /></label>
-        <label>Favourite:
-          <input type="checkbox" id="project-fav" name="project-fav"/><br /></label>
-        <label>Completed:
-          <input type="checkbox" id="project-completed" name="project-completed" /><br /></label>
-        <button type="submit" id="project-btn">Create</button>
-      </form>
+    <div class="error" id="msg"></div>
+    <div class="flex-container main-container">
+      <div class="create-category">
+        <h2>Create a Category</h2>
+        <form class="">
+          <label
+            >Name:<br />
+            <input type="text" id="category-name" name="category-name" /></label
+          ><br />
+          <label
+            >Shorthand:<br />
+            <input type="text" id="category-sh" name="category-sh" /></label
+          ><br />
+          <input type="submit" id="category-submit" />
+        </form>
+      </div>
+      <div class="create-project">
+        <h2>Create a Project</h2>
+        <form class="">
+          <label>Category: <br /><select id="category-select"></select></label>
+          <label
+            >Name:<br />
+            <input type="text" id="project-name" name="project-name" /></label
+          ><br />
+          <label
+            >Description:<br />
+            <textarea
+              id="project-description"
+              name="project-description"
+            ></textarea></label
+          ><br />
+          <label
+            >Path: <br /><input
+              type="text"
+              id="project-path"
+              name="project-path" /><br
+          /></label>
+          <label
+            >Favourite:
+            <input type="checkbox" id="project-fav" name="project-fav" /><br
+          /></label>
+          <label
+            >Completed:
+            <input
+              type="checkbox"
+              id="project-completed"
+              name="project-completed" /><br
+          /></label>
+          <button type="submit" id="project-btn">Create</button>
+        </form>
+      </div>
     </div>
-
-  </div>
-  <script src="script.js"></script>
-</body>
-
+    <script src="script.js"></script>
+  </body>
 </html>
