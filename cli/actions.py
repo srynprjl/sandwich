@@ -4,6 +4,7 @@ import shutil
 import sqlite3
 import subprocess
 
+import tabulate
 from flask.app import Flask
 
 from api.app import run_server
@@ -44,17 +45,21 @@ def category_logics(con: sqlite3.Connection):
             if argument is None:
                 categories = category.get_all_categories(con)
                 data = categories["data"]
-                print("ID || Name")
-                for id, name, shorthand in data:
-                    print(f" {id} ||  {name}")
+                col_headers = ("ID", "Name", "Shorthand")
+                # print("ID || Name")
+                # for id, name, shorthand in data:
+                #     print(f" {id} ||  {name}")
+                print(tabulate.tabulate(data, headers=col_headers))
             else:
                 project_list = projects.list_all_projects(con=con, category=argument)
                 data = project_list["data"]
-                print("ID || Name || Completed || Favorite || Description")
+                col_headers = ("ID", "Name", "Completed", "Favourite", "Description")
+                table_data = []
                 for id, name, description, completed, favorite, *rest in data:
                     fav = True if favorite == 1 else False
                     com = True if completed == 1 else False
-                    print(f" {id} ||  {name} || {com} || {fav} || {description}")
+                    table_data.append((id, name, com, fav, description))
+                print(tabulate.tabulate(table_data, headers=col_headers))
         case _:
             sub_action = next(
                 a for a in parser._actions if isinstance(a, argparse._SubParsersAction)
@@ -67,14 +72,14 @@ def project_logics(con: sqlite3.Connection):
         case "add":
             name = args.name
             description = args.description
-            category = args.category
+            cat = args.category
             path = args.path
             fav = args.favourite
             completed = args.complete
             data = {
                 "name": name,
                 "description": description,
-                "category": category,
+                "category": cat,
                 "path": path,
                 "favorite": fav,
                 "completed": completed,
@@ -108,14 +113,20 @@ def project_logics(con: sqlite3.Connection):
             if not project["data"]:
                 print(f"{project['message']}")
                 return
-            fav = True if project["data"][4] == 1 else False
-            com = True if project["data"][3] == 1 else False
-            print(f"ID -> {project['data'][0]} ")
-            print(f"Name -> {project['data'][1]}")
-            print(f"Description -> {project['data'][2]}")
-            print(f"Path -> {project['data'][5]}")
-            print(f"Favorite -> {fav}")
-            print(f"Complete -> {com}")
+            project["data"] = list(project["data"])
+            project["data"][4] = True if project["data"][4] == 1 else False
+            project["data"][3] = True if project["data"][3] == 1 else False
+            columns = (
+                "ID",
+                "Name",
+                "Description",
+                "Completed",
+                "Favorite",
+                "Path",
+                "Category",
+            )
+            project_datas = [i for i in zip(columns, project["data"])]
+            print(tabulate.tabulate(project_datas))
 
         case "favourite":
             id = args.id

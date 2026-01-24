@@ -38,5 +38,5 @@ def create_initial_tables(con: sqlite3.Connection):
 
 
 def db():
-    con = connect_db("database")
+    con = connect_db("testing")
     return con
