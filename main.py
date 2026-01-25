@@ -1,16 +1,15 @@
 import sys
+
 from cli.actions import cli
 from db import database
 
 
 def main():
-    from api.app import run_server
-    con = database.db()
-    database.create_initial_tables(con=con)
+    database.create_initial_tables()
     if len(sys.argv) == 1:
         pass
     else:
-        cli(con)
+        cli()
 
 
 if __name__ == "__main__":

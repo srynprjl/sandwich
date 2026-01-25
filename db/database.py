@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-from config.variables import DATABASE_PATH
+from config.variables import DATABASE_NAME, DATABASE_PATH
 
 
 def create_database_location():
@@ -24,7 +24,8 @@ def close_db(con: sqlite3.Connection):
     con.close()
 
 
-def create_initial_tables(con: sqlite3.Connection):
+def create_initial_tables():
+    con = connect_db(DATABASE_NAME)
     cur = con.cursor()
     sql_statements = [
         """CREATE TABLE categories(id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(50) NOT NULL, shorthand VARCHAR(20) UNIQUE)""",
@@ -35,8 +36,4 @@ def create_initial_tables(con: sqlite3.Connection):
             cur.execute(sql)
         except sqlite3.Error as e:
             continue
-
-
-def db():
-    con = connect_db("testing")
-    return con
+    close_db(con)

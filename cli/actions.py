@@ -17,16 +17,16 @@ from .parser import parse_arguments
 parser, args = parse_arguments()
 
 
-def category_logics(con: sqlite3.Connection):
+def category_logics():
     match args.action:
         case "add":
             name = args.name
             shorthand = args.shorthand
-            category.add_category(con, name=name, shorthand=shorthand)
+            category.add_category(name=name, shorthand=shorthand)
 
         case "delete":
             id = args.id
-            category.remove_category(con=con, id=id)
+            category.remove_category(id=id)
 
         case "update":
             if args.name is None and args.shorthand is None:
@@ -38,12 +38,12 @@ def category_logics(con: sqlite3.Connection):
             if args.shorthand is not None:
                 new_data["shorthand"] = args.shorthand
             id = args.id
-            category.update_category(con=con, id=id, new_data=new_data)
+            category.update_category(id=id, new_data=new_data)
 
         case "list":
             argument = args.id
             if argument is None:
-                categories = category.get_all_categories(con)
+                categories = category.get_all_categories()
                 data = categories["data"]
                 col_headers = ("ID", "Name", "Shorthand")
                 # print("ID || Name")
@@ -51,10 +51,13 @@ def category_logics(con: sqlite3.Connection):
                 #     print(f" {id} ||  {name}")
                 print(tabulate.tabulate(data, headers=col_headers))
             else:
-                project_list = projects.list_all_projects(con=con, category=argument)
+                project_list = projects.list_all_projects(category=argument)
                 data = project_list["data"]
                 col_headers = ("ID", "Name", "Completed", "Favourite", "Description")
                 table_data = []
+                if not data:
+                    print("No category found with that ID")
+                    return
                 for id, name, description, completed, favorite, *rest in data:
                     fav = True if favorite == 1 else False
                     com = True if completed == 1 else False
@@ -67,7 +70,7 @@ def category_logics(con: sqlite3.Connection):
             sub_action.choices["category"].print_help()
 
 
-def project_logics(con: sqlite3.Connection):
+def project_logics():
     match args.action:
         case "add":
             name = args.name
@@ -84,12 +87,12 @@ def project_logics(con: sqlite3.Connection):
                 "favorite": fav,
                 "completed": completed,
             }
-            projects.add_project(con, project_data=data)
+            projects.add_project(project_data=data)
 
         case "delete":
             id = args.id
-            catVal = projects.get_project_field_value(con, args.id, "category")
-            projects.delete_project(con=con, id=id, catId=catVal["data"])
+            catVal = projects.get_project_field_value(args.id, "category")
+            projects.delete_project(id=id, catId=catVal["data"])
 
         case "update":
             data = {
@@ -100,16 +103,14 @@ def project_logics(con: sqlite3.Connection):
                 "favorite": args.favourite,
                 "completed": args.complete,
             }
-            catVal = projects.get_project_field_value(con, args.id, "category")
+            catVal = projects.get_project_field_value(args.id, "category")
             data = {k: v for k, v in data.items() if v is not None}
-            projects.update_project(
-                con, id=args.id, new_data=data, catId=catVal["data"]
-            )
+            projects.update_project(id=args.id, new_data=data, catId=catVal["data"])
 
         case "view":
             id = args.id
-            catVal = projects.get_project_field_value(con, args.id, "category")
-            project = projects.get_project(con=con, id=id, catId=catVal["data"])
+            catVal = projects.get_project_field_value(args.id, "category")
+            project = projects.get_project(id=id, catId=catVal["data"])
             if not project["data"]:
                 print(f"{project['message']}")
                 return
@@ -130,24 +131,20 @@ def project_logics(con: sqlite3.Connection):
 
         case "favourite":
             id = args.id
-            catVal = projects.get_project_field_value(con, args.id, "category")
-            fav_value = projects.get_project_field_value(
-                con=con, id=id, field="favorite"
-            )
+            catVal = projects.get_project_field_value(args.id, "category")
+            fav_value = projects.get_project_field_value(id=id, field="favorite")
             fav = 0 if fav_value == 1 else 1
             projects.update_project(
-                con=con, id=id, new_data={"favorite": fav}, catId=catVal["data"]
+                id=id, new_data={"favorite": fav}, catId=catVal["data"]
             )
 
         case "complete":
             id = args.id
-            catVal = projects.get_project_field_value(con, args.id, "category")
-            completed_val = projects.get_project_field_value(
-                con=con, id=id, field="completed"
-            )
+            catVal = projects.get_project_field_value(args.id, "category")
+            completed_val = projects.get_project_field_value(id=id, field="completed")
             com = 0 if completed_val == 1 else 1
             projects.update_project(
-                con=con, id=id, new_data={"completed": com}, catId=catVal["data"]
+                id=id, new_data={"completed": com}, catId=catVal["data"]
             )
         case _:
             sub_action = next(
@@ -158,7 +155,7 @@ def project_logics(con: sqlite3.Connection):
     try:
         if args.editor:
             id = args.id
-            path = projects.get_project_field_value(con=con, id=id, field="path")
+            path = projects.get_project_field_value(id=id, field="path")
             if not path["data"]:
                 print(path["message"])
                 return
@@ -179,18 +176,18 @@ def project_logics(con: sqlite3.Connection):
         pass
 
 
-def cli(con: sqlite3.Connection):
+def cli():
     if args.web == "on":
         run_server(PORT)
     if args.command == "category":
-        category_logics(con)
+        category_logics()
     elif args.command == "project":
-        project_logics(con)
+        project_logics()
 
     if args.completed or args.favourite:
         dict = {"completed": args.completed, "favorite": args.favourite}
         query = {k: v for k, v in dict.items() if v == "True"}
-        data = projects.get_projects_cf(con, query)
+        data = projects.get_projects_cf(query)
         print("ID || Name || Completed || Favorite || Description")
         for id, name, description, completed, favorite, *rest in data["data"]:
             fav = True if favorite == 1 else False

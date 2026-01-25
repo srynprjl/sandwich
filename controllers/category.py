@@ -1,9 +1,11 @@
 import sqlite3
 
+from config.variables import DATABASE_NAME
+from db import database
 
-def category_exists(
-    con: sqlite3.Connection, id: (int | None) = None, shorthand: (str | None) = None
-):
+
+def category_exists(id: (int | None) = None, shorthand: (str | None) = None):
+    con = database.connect_db(DATABASE_NAME)
     if id is None and shorthand is None:
         return {
             "message": "Please insert at least the id or the shorthand",
@@ -29,6 +31,7 @@ def category_exists(
     except sqlite3.Error:
         return None
     data = cur.fetchone()
+    database.close_db(con)
     returnValue = data if data else None
     messageValue = "exists" if data else "doesn't exist"
     status = 200 if data else 404
@@ -39,41 +42,45 @@ def category_exists(
     }
 
 
-def add_category(
-    con: sqlite3.Connection, name: str, shorthand: str, description: (str | None) = None
-):
+def add_category(name: str, shorthand: str, description: (str | None) = None):
+    con = database.connect_db(DATABASE_NAME)
     sql = f"""INSERT INTO categories(name, shorthand) VALUES("{name}", "{shorthand}")"""
     cur = con.cursor()
     try:
         cur.execute(sql)
         con.commit()
+
     except sqlite3.Error:
+        database.close_db(con)
         return {"message": "Something went wrong", "status": 500}
+
+    database.close_db(con)
     return {"message": "Category successfully created.", "status": 201}
 
 
-def remove_category(
-    con: sqlite3.Connection, id: (int | None) = None, shorthand: (str | None) = None
-):
-    data = category_exists(con, id, shorthand)
+def remove_category(id: (int | None) = None, shorthand: (str | None) = None):
+    con = database.connect_db(DATABASE_NAME)
+    data = category_exists(id, shorthand)
     if not data:
         return {"message": "Something went wrong", "status": 500}
     cur = con.cursor()
     if data["status"] not in (404, 400):
         cur.execute(f"""DELETE FROM categories WHERE id={data["data"][0]};""")
         con.commit()
+        database.close_db(con)
         return {"message": f"Category {id} successfully deleted", "status": 201}
     else:
+        database.close_db(con)
         return {"message": f"Category {id} not found", "status": 404}
 
 
 def update_category(
-    con: sqlite3.Connection,
     new_data: dict[str, str],
     id: (int | None) = None,
     shorthand: (str | None) = None,
 ):
-    exists = category_exists(con, id, shorthand)
+    con = database.connect_db(DATABASE_NAME)
+    exists = category_exists(id, shorthand)
     if not exists:
         return {"message": "Something went wrong", "status": 500}
     data = exists["data"]
@@ -88,30 +95,39 @@ def update_category(
         sql = f"""UPDATE categories SET {sql_piece} WHERE id={data[0]}"""
         cur.execute(sql)
         con.commit()
+        database.close_db(con)
         return {"message": "Data successfully updated.", "status": 201}
     else:
+        database.close_db(con)
         return {"message": "Data not found", "status": 404}
 
 
-def get_all_categories(con: sqlite3.Connection):
+def get_all_categories():
+    con = database.connect_db(DATABASE_NAME)
     sql = """SELECT * from categories"""
     cur = con.cursor()
-    cur.execute(sql)
-    con.commit()
-    data = cur.fetchall()
-    return {"message": "Data fetched successfully", "data": data, "status": 201}
+    try:
+        cur.execute(sql)
+        con.commit()
+        data = cur.fetchall()
+        database.close_db(con)
+        return {"message": "Data fetched successfully", "data": data, "status": 201}
+    except sqlite3.Error:
+        database.close_db(con)
+        return {"message": "Data not found", "status": 404}
 
 
-def get_category(
-    con: sqlite3.Connection, id: (int | None) = None, shorthand: (str | None) = None
-):
-    exists = category_exists(con, id, shorthand)
+def get_category(id: (int | None) = None, shorthand: (str | None) = None):
+    con = database.connect_db(DATABASE_NAME)
+    exists = category_exists(id, shorthand)
     if not exists:
         return {"message": "Something went wrong", "status": 500}
     data = exists["data"]
     if exists:
         cur = con.cursor()
         cur.execute(f"""SELECT * from categories WHERE id={data[0]}""")
+        database.close_db(con)
         return {"message": "Data fetched successfully", "data": data, "status": 201}
     else:
-        return {"message": "Data fetched successfully", "data": data, "status": 201}
+        database.close_db(con)
+        return {"message": "Data not found", "data": [], "status": 201}

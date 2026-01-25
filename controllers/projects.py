@@ -1,9 +1,12 @@
 import sqlite3
 
+from config.variables import DATABASE_NAME
+from db import database
+
 from .category import category_exists, get_category
 
 
-def get_project_field_value(con: sqlite3.Connection, id: int, field: str):
+def get_project_field_value(id: int, field: str):
     if field not in (
         "name",
         "description",
@@ -25,7 +28,7 @@ def get_project_field_value(con: sqlite3.Connection, id: int, field: str):
         "completed": 3,
         "category": 6,
     }
-    exists = project_exists(con, id)
+    exists = project_exists(id)
     if not exists:
         return {"message": "Something went wrong!", "data": None, "status": 500}
 
@@ -68,26 +71,33 @@ def schema_check(data: dict):
     return new_data
 
 
-def project_exists(con: sqlite3.Connection, id: int):
+def project_exists(id: int):
+    con = database.connect_db(DATABASE_NAME)
     sql = f"""SELECT * from projects WHERE id={id}"""
     cur = con.cursor()
     try:
         cur.execute(sql)
+        data = cur.fetchone()
+        database.close_db(con)
+        returnValue = data if data else None
+        status = 201 if data else 404
+        message = "exists" if data else "doesn't exist"
+        return {
+            "message": f"The project {message}",
+            "status": status,
+            "data": returnValue,
+        }
     except sqlite3.Error:
         return None
-    data = cur.fetchone()
-    returnValue = data if data else None
-    status = 201 if data else 404
-    message = "exists" if data else "doesn't exist"
-    return {"message": f"The project {message}", "status": status, "data": returnValue}
 
 
-def add_project(con: sqlite3.Connection, project_data: dict):
+def add_project(project_data: dict):
+    con = database.connect_db(DATABASE_NAME)
     cur = con.cursor()
     data = schema_check(project_data)
     if data is None:
         return {"message": "Please provide the proper data", "status": 404}
-    exists = category_exists(con=con, id=data["category"])
+    exists = category_exists(id=data["category"])
     if exists is None:
         return {"message": "Something happened"}
     if exists["status"] == 404:
@@ -104,21 +114,23 @@ def add_project(con: sqlite3.Connection, project_data: dict):
     try:
         cur.execute(query)
         con.commit()
+        database.close_db(con)
+        return {"message": "The project successfully added", "status": 201}
     except sqlite3.Error as e:
         return {"message": e, "data": None, "status": 201}
-    return {"message": "The project successfully added", "status": 201}
 
 
-def delete_project(con: sqlite3.Connection, id: int, catId: int):
-    catExists = category_exists(con, catId)
-    exists = project_exists(con, id)
+def delete_project(id: int, catId: int):
+    con = database.connect_db(DATABASE_NAME)
+    catExists = category_exists(catId)
+    exists = project_exists(id)
     if catExists is None or exists is None:
         return {"message": "Something went wrong!", "status": 500}
     if catExists["status"] == 404:
         return {"message": "Category doesn't exist", "status": 404}
     if exists["status"] == 404:
         return {"message": "Project doesn't exist", "status": 404}
-    catValue = get_project_field_value(con, id, "category")
+    catValue = get_project_field_value(id, "category")
     if catValue["data"] != catId:
         return {"message": "Project doesn't belong into the category", "status": 400}
 
@@ -130,6 +142,7 @@ def delete_project(con: sqlite3.Connection, id: int, catId: int):
     try:
         cur.execute(sql)
         con.commit()
+        database.close_db(con)
         return {"message": "The project successfully deleted", "status": 201}
     except sqlite3.Error:
         return {
@@ -154,16 +167,17 @@ def update_schema_check(data: dict):
     return {"message": "Data successfully parsed", "data": new_dict, "status": 20}
 
 
-def update_project(con: sqlite3.Connection, id: int, new_data: dict, catId: int):
-    catExists = category_exists(con, catId)
-    exists = project_exists(con, id)
+def update_project(id: int, new_data: dict, catId: int):
+    con = database.connect_db(DATABASE_NAME)
+    catExists = category_exists(catId)
+    exists = project_exists(id)
     if catExists is None or exists is None:
         return {"message": "Something went wrong!", "status": 500}
     if catExists["status"] == 404:
         return {"message": "Category doesn't exist", "status": 404}
     if exists["status"] == 404:
         return {"message": "Project doesn't exist", "status": 404}
-    catValue = get_project_field_value(con, id, "category")
+    catValue = get_project_field_value(id, "category")
     if catValue["data"] != catId:
         return {"message": "Project doesn't belong into the category", "status": 400}
 
@@ -177,7 +191,7 @@ def update_project(con: sqlite3.Connection, id: int, new_data: dict, catId: int)
         return parsed_data
     if parsed_data["data"].get("category", None) is None:
         parsed_data["data"]["category"] = catId
-    if not category_exists(con, parsed_data["data"]["category"]):
+    if not category_exists(parsed_data["data"]["category"]):
         parsed_data["data"]["category"] = catId
 
     for k, v in parsed_data["data"].items():
@@ -189,22 +203,23 @@ def update_project(con: sqlite3.Connection, id: int, new_data: dict, catId: int)
     cur = con.cursor()
     try:
         cur.execute(sql)
+        con.commit()
+        return {"message": "The project successfully updated", "status": 201}
+        database.close_db(con)
     except sqlite3.Error:
         return {"message": "Something went wrong!", "status": 500}
-    con.commit()
-    return {"message": "The project successfully updated", "status": 201}
 
 
-def get_project(con: sqlite3.Connection, id: int, catId: int):
-    catExists = category_exists(con, catId)
-    exists = project_exists(con, id)
+def get_project(id: int, catId: int):
+    catExists = category_exists(catId)
+    exists = project_exists(id)
     if catExists is None or exists is None:
         return {"message": "Something went wrong!", "data": None, "status": 500}
     if catExists["status"] == 404:
         return {"message": "The category doesn't exist", "data": None, "status": 404}
     if exists["status"] == 404:
         return {"message": "The project doesn't exist", "data": None, "status": 404}
-    catValue = get_project_field_value(con=con, id=id, field="category")
+    catValue = get_project_field_value(id=id, field="category")
     if catValue["data"] != catId:
         return {
             "message": "The project doesn't exist in the specified category",
@@ -212,7 +227,7 @@ def get_project(con: sqlite3.Connection, id: int, catId: int):
             "status": 404,
         }
     data = list(exists["data"])
-    data[6] = get_category(con, id=catValue["data"])["data"][1]
+    data[6] = get_category(id=catValue["data"])["data"][1]
     if data:
         return {
             "message": "The project successfully fetched",
@@ -223,8 +238,9 @@ def get_project(con: sqlite3.Connection, id: int, catId: int):
         return {"message": "Something went wrong!", "data": None, "status": 500}
 
 
-def list_all_projects(con: sqlite3.Connection, category: int):
-    exists = category_exists(con=con, id=category)
+def list_all_projects(category: int):
+    con = database.connect_db(DATABASE_NAME)
+    exists = category_exists(id=category)
     if exists is None:
         return {"message": "Something went wrong!", "status": 500}
     if exists["status"] == 404:
@@ -237,12 +253,14 @@ def list_all_projects(con: sqlite3.Connection, category: int):
     try:
         cur.execute(sql)
         data = cur.fetchall()
+        database.close_db(con)
     except sqlite3.DataError:
         return {"message": "Something went wrong!", "status": 500}
     return {"message": "The project successfully fetched", "data": data, "status": 201}
 
 
-def get_projects_cf(con: sqlite3.Connection, query: dict):
+def get_projects_cf(query: dict):
+    con = database.connect_db(DATABASE_NAME)
     query_items = [
         f"{k}={int(bool(v))}"
         for k, v in query.items()
@@ -255,6 +273,7 @@ def get_projects_cf(con: sqlite3.Connection, query: dict):
     try:
         cur.execute(sql)
         data = cur.fetchall()
+        database.close_db(con)
     except sqlite3.Error as e:
         print(e)
         return {"message": "Something went wrong!", "data": None, "status": 201}
