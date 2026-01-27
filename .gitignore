@@ -6,4 +6,9 @@ wheels/
 *.egg-info
 .venv
 *.db
-TODO.md
+ideas.md
+
+gui/
+tui/
+
+rewrite/

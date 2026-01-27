@@ -1,7 +1,8 @@
 [project]
 name = "sandwich"
+author = "sysnefo"
 version = "0.0.1"
-description = "A TUI Project Management Software made with Python."
+description = "A Project Management Software made with Python."
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

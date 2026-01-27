@@ -1,12 +1,14 @@
 import argparse
 
+from utils.variables import VERSION
+
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
         prog="sandwich", description="Manage your projects easily in the terminal"
     )
 
-    parser.add_argument("--version", action="version", version="%(prog)s 1.0")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {VERSION}")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     cat_parser = subparsers.add_parser("category", help="Manage categories")

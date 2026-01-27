@@ -9,8 +9,8 @@ from flask.app import Flask
 
 from api.app import run_server
 from api.routes.projects import project
-from config.variables import PORT
-from controllers import category, projects
+from lib import category, projects
+from utils.variables import PORT
 
 from .parser import parse_arguments
 

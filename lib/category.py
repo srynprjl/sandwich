@@ -1,7 +1,7 @@
 import sqlite3
 
-from config.variables import DATABASE_NAME
-from db import database
+from utils import database
+from utils.variables import DATABASE_NAME
 
 
 def category_exists(id: (int | None) = None, shorthand: (str | None) = None):

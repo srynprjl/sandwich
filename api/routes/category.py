@@ -2,7 +2,7 @@ import sqlite3
 
 from flask import Blueprint, request
 
-from controllers import category
+from lib import category
 
 categories = Blueprint("categories", __name__)
 

@@ -1,7 +1,7 @@
 import sys
 
 from cli.actions import cli
-from db import database
+from utils import database
 
 
 def main():

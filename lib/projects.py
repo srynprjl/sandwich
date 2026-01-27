@@ -1,7 +1,7 @@
 import sqlite3
 
-from config.variables import DATABASE_NAME
-from db import database
+from utils import database
+from utils.variables import DATABASE_NAME
 
 from .category import category_exists, get_category
 

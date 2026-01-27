@@ -1,6 +1,6 @@
 from flask import Blueprint, request
 
-from controllers import projects
+from lib import projects
 
 project = Blueprint("project", __name__)
 
@@ -13,8 +13,11 @@ def get_all_project(categoryId: int):
 @project.post("/api/category/<int:categoryId>/project")
 def add_project(categoryId):
     body = request.get_json()
+
     body["category"] = categoryId
-    return projects.add_project(project_data=body)
+    response = projects.add_project(project_data=body)
+    print(response)
+    return response
 
 
 @project.delete("/api/category/<int:categoryId>/project/<int:projectId>")

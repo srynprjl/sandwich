@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-from config.variables import DATABASE_NAME, DATABASE_PATH
+from utils.variables import DATABASE_NAME, DATABASE_PATH
 
 
 def create_database_location():
