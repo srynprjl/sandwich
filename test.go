@@ -8,14 +8,10 @@ import (
 )
 
 func test() {
-	id := 3
-	title := "Hello"
-	shorthand := "hi"
+	id := 1
 	cat := category.Category{
-		Id:        &id,
-		Title:     &title,
-		Shorthand: &shorthand,
+		Id: &id,
 	}
 
-	fmt.Print(cat.Update())
+	fmt.Print(cat.DoesExists())
 }

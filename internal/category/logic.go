@@ -1,11 +1,45 @@
 package category
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
 
 	"github.com/srynprjl/sandwich/utils"
 )
+
+func whereClause(id *int, shorthand *string) (string, []any) {
+	var where_clause []string
+	var values []any
+	if id != nil {
+		where_clause = append(where_clause, "id = ?")
+		values = append(values, *id)
+	}
+	if shorthand != nil {
+		where_clause = append(where_clause, "shorthand = ?")
+		values = append(values, *shorthand)
+	}
+	where := strings.Join(where_clause, " AND ")
+	return where, values
+}
+
+func (c *Category) DoesExists() (bool, error) {
+	conn := utils.DB
+	conn.Connect()
+	defer conn.Close()
+	where, values := whereClause(c.Id, c.Shorthand)
+	sqlS := "SELECT 1 FROM categories WHERE " + where + " LIMIT 1"
+	fmt.Println(sqlS, values)
+	var enough bool
+	err := conn.Conn.QueryRow(sqlS, values...).Scan(&enough)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
 
 func (c *Category) Add() map[string]any {
 	conn := utils.DB
@@ -26,17 +60,7 @@ func (c *Category) Delete() map[string]any {
 	conn := utils.DB
 	conn.Connect()
 	defer conn.Close()
-	var where_clause []string
-	var values []any
-	if c.Id != nil {
-		where_clause = append(where_clause, "id = ?")
-		values = append(values, *c.Id)
-	}
-	if c.Shorthand != nil {
-		where_clause = append(where_clause, "shorthand = ?")
-		values = append(values, *c.Shorthand)
-	}
-	where := strings.Join(where_clause, " AND ")
+	where, values := whereClause(c.Id, c.Shorthand)
 	sql := "DELETE FROM categories WHERE " + where + ";"
 	if len(where) <= 0 {
 		return map[string]any{"message": "No ID or Shorthand Provided", "status": "400"}
@@ -75,7 +99,7 @@ func (c *Category) Update() map[string]any {
 	return map[string]any{"message": "Updated successfully", "status": "200"}
 }
 
-func (c *Category) GetProject() {
+func (c *Category) GetProjects() {
 
 }
 
