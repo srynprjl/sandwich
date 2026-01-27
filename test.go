@@ -8,10 +8,14 @@ import (
 )
 
 func test() {
-	id := 1
+	id := 3
+	title := "Hello"
+	shorthand := "hi"
 	cat := category.Category{
-		Id: &id,
+		Id:        &id,
+		Title:     &title,
+		Shorthand: &shorthand,
 	}
 
-	fmt.Print(cat.Delete())
+	fmt.Print(cat.Update())
 }

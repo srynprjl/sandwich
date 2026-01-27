@@ -1,6 +1,7 @@
 package category
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/srynprjl/sandwich/utils"
@@ -47,8 +48,31 @@ func (c *Category) Delete() map[string]any {
 	return map[string]any{"message": "Deleted item", "status": "200"}
 }
 
-func (c *Category) Update() {
+func (c *Category) Update() map[string]any {
+	conn := utils.DB
+	conn.Connect()
+	defer conn.Conn.Close()
+	var update_values []string
+	var values []any
+	if c.Title != nil {
+		update_values = append(update_values, "name = ?")
+		values = append(values, *c.Title)
+	}
+	if c.Shorthand != nil {
+		update_values = append(update_values, "shorthand = ?")
+		values = append(values, *c.Shorthand)
+	}
+	if c.Id == nil {
+		return map[string]any{"message": "ID Needed", "status": "400"}
+	}
+	set := strings.Join(update_values, ",")
+	sql := fmt.Sprintf(`UPDATE categories SET %s WHERE id=%d`, set, *c.Id)
 
+	_, err := conn.Conn.Exec(sql, values...)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	return map[string]any{"message": "Updated successfully", "status": "200"}
 }
 
 func (c *Category) GetProject() {
