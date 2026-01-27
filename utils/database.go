@@ -14,6 +14,11 @@ type Database struct {
 	Conn     *sql.DB
 }
 
+var DB = Database{
+	Name:     DATABASE_NAME,
+	Location: DATABASE_LOCATION,
+}
+
 func (d *Database) Connect() {
 	_, err := os.Stat(d.Location)
 	if os.IsNotExist(err) {
