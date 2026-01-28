@@ -22,12 +22,12 @@ func (p *Project) Exists() (bool, error) {
 	db.Connect()
 	defer db.Close()
 
-	if p.Id <= 0 {
-		return false, errors.New("Id should be positive or given.")
+	if p.Id <= 0 || p.Category <= 0 {
+		return false, errors.New("Id/Category should be  given.")
 	}
 
-	query := "SELECT 1 FROM projects WHERE id = ? LIMIT 1"
-	err := db.Conn.QueryRow(query, p.Id).Scan(&exists)
+	query := "SELECT 1 FROM projects WHERE id = ? AND category = ? LIMIT 1"
+	err := db.Conn.QueryRow(query, p.Id, p.Category).Scan(&exists)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -58,16 +58,11 @@ func (p *Project) Remove() map[string]any {
 	defer db.Close()
 	sqlStatement := "DELETE FROM projects WHERE id=? AND category=?"
 	values := []any{p.Id, p.Category}
-	if values[0] == 0 || values[1] == 0 {
-		return map[string]any{"message": "Failed.", "status": "500"}
-	}
-	category := category.Category{Id: p.Category}
-	exists, catErr := category.DoesExists()
-	if catErr != nil {
-		return map[string]any{"message": catErr.Error(), "status": "500"}
-	}
-	if !exists {
-		return map[string]any{"message": "Category doesn't exist", "status": "500"}
+	if exists, err := p.Exists(); !exists {
+		if err != nil {
+			return map[string]any{"message": "Failed.", "status": "500"}
+		}
+		return map[string]any{"message": "No project found in that category", "status": "400"}
 	}
 	_, err := db.Conn.Exec(sqlStatement, values...)
 	if err != nil {
@@ -80,7 +75,7 @@ func schemaUpdate(values map[string]any) map[string]any {
 	keys := []string{"name", "description", "completed", "favorite", "path", "category"}
 	newData := make(map[string]any)
 	for _, data := range keys {
-		if value, exists := values[data]; exists {
+		if value, exists := values[data]; !exists {
 			newData[data] = value
 		}
 	}
@@ -91,6 +86,12 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 	db := utils.DB
 	db.Connect()
 	defer db.Close()
+	if exists, err := p.Exists(); !exists {
+		if err != nil {
+			return map[string]any{"message": "Failed.", "status": "500"}
+		}
+		return map[string]any{"message": "No project found in that category", "status": "400"}
+	}
 	validatedData := schemaUpdate(newValues)
 	if len(validatedData) == 0 {
 		return map[string]any{"message": "Nothing to be updated", "status": "200"}
@@ -117,13 +118,11 @@ func (p *Project) Get() map[string]any {
 	defer db.Close()
 	id := p.Id
 	cat := p.Category
-	category := category.Category{Id: p.Category}
-	exists, catErr := category.DoesExists()
-	if catErr != nil {
-		return map[string]any{"message": catErr.Error(), "status": "500"}
-	}
-	if !exists {
-		return map[string]any{"message": "Category doesn't exist", "status": "500"}
+	if exists, err := p.Exists(); !exists {
+		if err != nil {
+			return map[string]any{"message": "Failed.", "status": "500"}
+		}
+		return map[string]any{"message": "No project found in that category", "status": "400"}
 	}
 	sqlStatement := "SELECT * FROM projects WHERE id=? AND category=? LIMIT 1"
 	err := db.Conn.QueryRow(sqlStatement, id, cat).Scan(fields.Field...)
@@ -186,4 +185,32 @@ func (p *Project) GetField(field []string) map[string]any {
 		return map[string]any{"message": err.Error(), "status": "500"}
 	}
 	return map[string]any{"message": "Fetched.", "data": value, "status": "500"}
+}
+
+func GetProjects(c category.Category) map[string]any {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	id := c.Id
+	if exists, err := c.DoesExists(); !exists {
+		if err != nil {
+			return map[string]any{"message": err.Error(), "status": "500"}
+		}
+		return map[string]any{"message": "No categories found", "status": "500"}
+	}
+	query := "SELECT * FROM projects WHERE category = ?"
+	res, err := db.Conn.Query(query, id)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	var project []Project
+	for res.Next() {
+		var p Project
+		var pf ProjectFields
+		pf.Init(&p)
+		res.Scan(pf.Field...)
+		project = append(project, p)
+	}
+
+	return map[string]any{"message": "Fetched", "data": project, "status": "500"}
 }

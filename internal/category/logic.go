@@ -113,10 +113,6 @@ func (c *Category) Update() map[string]any {
 	return map[string]any{"message": "Updated successfully", "status": "200"}
 }
 
-func (c *Category) GetProjects() {
-	// pass
-}
-
 func (c *Category) GetField(field []string) map[string]any {
 	db := utils.DB
 	db.Connect()
