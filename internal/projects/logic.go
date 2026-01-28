@@ -1,0 +1,143 @@
+package projects
+
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+
+	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/utils"
+)
+
+func (p *Project) Exists() (bool, error) {
+
+	var exists bool = false
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+
+	if p.Id <= 0 {
+		return false, errors.New("Id should be positive or given.")
+	}
+
+	query := "SELECT 1 FROM projects WHERE id = ? LIMIT 1"
+	err := db.Conn.QueryRow(query, p.Id).Scan(&exists)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return exists, nil
+		}
+		return false, err
+	}
+
+	return exists, nil
+}
+
+func (p *Project) Add() map[string]any {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	sqlStatement := "INSERT INTO projects(name, description, completed, favorite, path, category) VALUES (?, ?, ?, ?, ?, ?)"
+	values := []any{p.Title, p.Description, p.Completed, p.Favourite, p.Path, p.Category}
+	_, err := db.Conn.Exec(sqlStatement, values...)
+	if err != nil {
+		return map[string]any{"message": "Failed.", "status": "500"}
+	}
+	return map[string]any{"message": "Created.", "status": "201"}
+}
+
+func (p *Project) Remove() map[string]any {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	sqlStatement := "DELETE FROM projects WHERE id=? AND category=?"
+	values := []any{p.Id, p.Category}
+	if values[0] == 0 || values[1] == 0 {
+		return map[string]any{"message": "Failed.", "status": "500"}
+	}
+	category := category.Category{Id: p.Category}
+	exists, catErr := category.DoesExists()
+	if catErr != nil {
+		return map[string]any{"message": catErr.Error(), "status": "500"}
+	}
+	if !exists {
+		return map[string]any{"message": "Category doesn't exist", "status": "500"}
+	}
+	_, err := db.Conn.Exec(sqlStatement, values...)
+	if err != nil {
+		return map[string]any{"message": "Failed.", "status": "500"}
+	}
+	return map[string]any{"message": "Deleted.", "status": "201"}
+}
+
+func (p *Project) Update() {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+}
+
+func (p *Project) Get() map[string]any {
+	var fields ProjectFields
+	fields.Init(p)
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	id := p.Id
+	cat := p.Category
+	category := category.Category{Id: p.Category}
+	exists, catErr := category.DoesExists()
+	if catErr != nil {
+		return map[string]any{"message": catErr.Error(), "status": "500"}
+	}
+	if !exists {
+		return map[string]any{"message": "Category doesn't exist", "status": "500"}
+	}
+	sqlStatement := "SELECT * FROM projects WHERE id=? AND category=? LIMIT 1"
+	err := db.Conn.QueryRow(sqlStatement, id, cat).Scan(fields.Field...)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	return map[string]any{"message": "Fetched.", "data": *p, "status": "201"}
+}
+
+func GetRandom() map[string]any {
+	var p Project
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	var fields ProjectFields
+	fields.Init(&p)
+	sqlStatement := "SELECT * FROM projects ORDER BY RANDOM() LIMIT 1"
+	err := db.Conn.QueryRow(sqlStatement).Scan(fields.Field...)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	return map[string]any{"message": "Fetched.", "data": p, "status": "201"}
+}
+
+func GetNRandom(n int) map[string]any {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	var projects []Project
+
+	sqlStatement := fmt.Sprintf("SELECT * FROM projects ORDER BY RANDOM() LIMIT %d", n)
+	rows, err := db.Conn.Query(sqlStatement)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	for rows.Next() {
+		var p Project
+		var fields ProjectFields
+		fields.Init(&p)
+		rows.Scan(fields.Field...)
+		projects = append(projects, p)
+	}
+	return map[string]any{"message": "Fetched.", "data": projects, "status": "201"}
+}
+
+func (p *Project) GetField() {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+}
