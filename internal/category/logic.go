@@ -27,11 +27,9 @@ func (c *Category) DoesExists() (bool, error) {
 	conn := utils.DB
 	conn.Connect()
 	defer conn.Close()
-	where, values := whereClause(c.Id, c.Shorthand)
-	sqlS := "SELECT 1 FROM categories WHERE " + where + " LIMIT 1;"
-	// fmt.Println(sqlS, values)
+	sqlS := "SELECT 1 FROM categories WHERE id=? LIMIT 1;"
 	var enough bool
-	err := conn.Conn.QueryRow(sqlS, values...).Scan(&enough)
+	err := conn.Conn.QueryRow(sqlS, c.Id).Scan(&enough)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil

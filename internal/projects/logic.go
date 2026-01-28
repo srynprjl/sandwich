@@ -86,7 +86,6 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 	db := utils.DB
 	db.Connect()
 	defer db.Close()
-	fmt.Println(newValues)
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
 			return map[string]any{"message": "Failed.", "status": "500"}
@@ -94,7 +93,6 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 		return map[string]any{"message": "No project found in that category", "status": "400"}
 	}
 	validatedData := schemaUpdate(newValues)
-	fmt.Println(validatedData)
 	if len(validatedData) == 0 {
 		return map[string]any{"message": "Nothing to be updated", "status": "200"}
 	}
@@ -107,7 +105,6 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 	appendItems = append(appendItems, p.Id)
 	updateField := strings.Join(updateString, ",")
 	sql := fmt.Sprintf("UPDATE projects SET %s WHERE id = ?; ", updateField)
-	fmt.Println(sql)
 	_, err := db.Conn.Exec(sql, appendItems...)
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": "500"}
@@ -190,7 +187,7 @@ func (p *Project) GetField(field []string) map[string]any {
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": "500"}
 	}
-	return map[string]any{"message": "Fetched.", "data": value, "status": "500"}
+	return map[string]any{"message": "Fetched.", "data": value, "status": "200"}
 }
 
 func GetProjects(c category.Category) map[string]any {

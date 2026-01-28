@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func Api() {
+func Api(host string, port int) {
 	mux := http.NewServeMux()
 
 	// categories
@@ -26,8 +26,9 @@ func Api() {
 
 	// server start
 	fmt.Println("Starting server...!")
-	err := http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 	if err != nil {
+		fmt.Println(err.Error())
 		fmt.Println("ERROR!")
 	}
 
