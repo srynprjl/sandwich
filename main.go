@@ -1,5 +1,7 @@
 package main
 
+import "github.com/srynprjl/sandwich/cmd/api"
+
 func main() {
-	test()
+	api.Api()
 }

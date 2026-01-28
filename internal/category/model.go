@@ -1,8 +1,8 @@
 package category
 
 type Category struct {
-	Id        int
-	Title     string
-	Shorthand string
+	Id        int    `json:"id"`
+	Title     string `json:"name"`
+	Shorthand string `json:"shorthand"`
 	//Description string
 }
