@@ -1,13 +1,13 @@
 package projects
 
 type Project struct {
-	Id          int
-	Title       string
-	Description string
-	Path        string
-	Favourite   bool
-	Completed   bool
-	Category    int
+	Id          int    `json:"id"`
+	Title       string `json:"name"`
+	Description string `json:"description"`
+	Path        string `json:"path"`
+	Favourite   bool   `json:"favorite"`
+	Completed   bool   `json:"completed"`
+	Category    int    `json:"category"`
 	//Working     bool
 	//ProjectId string
 	//GitHubURL string

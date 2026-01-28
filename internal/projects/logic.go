@@ -75,7 +75,7 @@ func schemaUpdate(values map[string]any) map[string]any {
 	keys := []string{"name", "description", "completed", "favorite", "path", "category"}
 	newData := make(map[string]any)
 	for _, data := range keys {
-		if value, exists := values[data]; !exists {
+		if value, exists := values[data]; exists {
 			newData[data] = value
 		}
 	}
@@ -86,6 +86,7 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 	db := utils.DB
 	db.Connect()
 	defer db.Close()
+	fmt.Println(newValues)
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
 			return map[string]any{"message": "Failed.", "status": "500"}
@@ -93,16 +94,21 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 		return map[string]any{"message": "No project found in that category", "status": "400"}
 	}
 	validatedData := schemaUpdate(newValues)
+	fmt.Println(validatedData)
 	if len(validatedData) == 0 {
 		return map[string]any{"message": "Nothing to be updated", "status": "200"}
 	}
 	var updateString []string
+	var appendItems []any
 	for k, v := range validatedData {
-		updateString = append(updateString, fmt.Sprintf("%s = %v", k, v))
+		updateString = append(updateString, fmt.Sprintf("%s=?", k))
+		appendItems = append(appendItems, v)
 	}
-	updateField := strings.Join(updateString, ", ")
+	appendItems = append(appendItems, p.Id)
+	updateField := strings.Join(updateString, ",")
 	sql := fmt.Sprintf("UPDATE projects SET %s WHERE id = ?; ", updateField)
-	_, err := db.Conn.Exec(sql, p.Id)
+	fmt.Println(sql)
+	_, err := db.Conn.Exec(sql, appendItems...)
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": "500"}
 	}
@@ -129,7 +135,7 @@ func (p *Project) Get() map[string]any {
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": "500"}
 	}
-	return map[string]any{"message": "Fetched.", "data": *p, "status": "201"}
+	return map[string]any{"message": "Fetched.", "data": *p, "status": "200"}
 }
 
 func GetRandom() map[string]any {
@@ -144,7 +150,7 @@ func GetRandom() map[string]any {
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": "500"}
 	}
-	return map[string]any{"message": "Fetched.", "data": p, "status": "201"}
+	return map[string]any{"message": "Fetched.", "data": p, "status": "200"}
 }
 
 func GetNRandom(n int) map[string]any {
@@ -165,7 +171,7 @@ func GetNRandom(n int) map[string]any {
 		rows.Scan(fields.Field...)
 		projects = append(projects, p)
 	}
-	return map[string]any{"message": "Fetched.", "data": projects, "status": "201"}
+	return map[string]any{"message": "Fetched.", "data": projects, "status": "200"}
 }
 
 func (p *Project) GetField(field []string) map[string]any {
@@ -212,5 +218,5 @@ func GetProjects(c category.Category) map[string]any {
 		project = append(project, p)
 	}
 
-	return map[string]any{"message": "Fetched", "data": project, "status": "500"}
+	return map[string]any{"message": "Fetched", "data": project, "status": "200"}
 }
