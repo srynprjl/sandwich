@@ -43,6 +43,13 @@ func (p *Project) Add() map[string]any {
 	db := utils.DB
 	db.Connect()
 	defer db.Close()
+	c := category.Category{Id: p.Category}
+	if exists, err := c.DoesExists(); !exists {
+		if err != nil {
+			return map[string]any{"message": err.Error(), "status": "500"}
+		}
+		return map[string]any{"message": "Category doesn't exists", "status": "400"}
+	}
 	sqlStatement := "INSERT INTO projects(name, description, completed, favorite, path, category) VALUES (?, ?, ?, ?, ?, ?)"
 	values := []any{p.Title, p.Description, p.Completed, p.Favourite, p.Path, p.Category}
 	_, err := db.Conn.Exec(sqlStatement, values...)
