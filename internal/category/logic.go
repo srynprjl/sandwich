@@ -137,3 +137,7 @@ func GetAll() map[string]any {
 	}
 	return map[string]any{"message": "Updated successfully", "status": "200", "data": data}
 }
+
+func (c *Category) getField() {
+
+}

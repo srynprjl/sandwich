@@ -4,13 +4,17 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/utils"
 )
 
-func (p *Project) Exists() (bool, error) {
+func (p *Project) MapProject() {
 
+}
+
+func (p *Project) Exists() (bool, error) {
 	var exists bool = false
 	db := utils.DB
 	db.Connect()
@@ -136,8 +140,21 @@ func GetNRandom(n int) map[string]any {
 	return map[string]any{"message": "Fetched.", "data": projects, "status": "201"}
 }
 
-func (p *Project) GetField() {
+func (p *Project) GetField(field []string) map[string]any {
 	db := utils.DB
 	db.Connect()
 	defer db.Close()
+	id := p.Id
+	values := strings.Join(field, ", ")
+	query := fmt.Sprintf("SELECT %s FROM projects WHERE id= ?", values)
+	var value = make([]any, len(field))
+	var scanArgs = make([]any, len(field))
+	for i := range value {
+		scanArgs[i] = &value[i]
+	}
+	err := db.Conn.QueryRow(query, id).Scan(scanArgs...)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	return map[string]any{"message": "Fetched.", "data": value, "status": "500"}
 }
