@@ -117,6 +117,25 @@ func (c *Category) GetProjects() {
 	// pass
 }
 
+func (c *Category) GetField(field []string) map[string]any {
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	id := c.Id
+	values := strings.Join(field, ", ")
+	query := fmt.Sprintf("SELECT %s FROM categories WHERE id= ?", values)
+	var value = make([]any, len(field))
+	var scanArgs = make([]any, len(field))
+	for i := range value {
+		scanArgs[i] = &value[i]
+	}
+	err := db.Conn.QueryRow(query, id).Scan(scanArgs...)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	return map[string]any{"message": "Fetched.", "data": value, "status": "500"}
+}
+
 func GetAll() map[string]any {
 	conn := utils.DB
 	conn.Connect()
@@ -136,8 +155,4 @@ func GetAll() map[string]any {
 		data = append(data, *c)
 	}
 	return map[string]any{"message": "Updated successfully", "status": "200", "data": data}
-}
-
-func (c *Category) getField() {
-
 }

@@ -10,8 +10,10 @@ import (
 	"github.com/srynprjl/sandwich/utils"
 )
 
-func (p *Project) MapProject() {
-
+func (p *Project) MapProject() map[string]any {
+	c := category.Category{Id: p.Category}
+	data := c.GetField([]string{"name"})["data"].(string)
+	return map[string]any{"id": p.Id, "name": p.Title, "description": p.Description, "path": p.Path, "category": data, "favourite": p.Favourite, "completed": p.Completed}
 }
 
 func (p *Project) Exists() (bool, error) {
@@ -74,10 +76,37 @@ func (p *Project) Remove() map[string]any {
 	return map[string]any{"message": "Deleted.", "status": "201"}
 }
 
-func (p *Project) Update() {
+func schemaUpdate(values map[string]any) map[string]any {
+	keys := []string{"name", "description", "completed", "favorite", "path", "category"}
+	newData := make(map[string]any)
+	for _, data := range keys {
+		if value, exists := values[data]; exists {
+			newData[data] = value
+		}
+	}
+	return newData
+}
+
+func (p *Project) Update(newValues map[string]any) map[string]any {
 	db := utils.DB
 	db.Connect()
 	defer db.Close()
+	validatedData := schemaUpdate(newValues)
+	if len(validatedData) == 0 {
+		return map[string]any{"message": "Nothing to be updated", "status": "200"}
+	}
+	var updateString []string
+	for k, v := range validatedData {
+		updateString = append(updateString, fmt.Sprintf("%s = %v", k, v))
+	}
+	updateField := strings.Join(updateString, ", ")
+	sql := fmt.Sprintf("UPDATE projects SET %s WHERE id = ?; ", updateField)
+	_, err := db.Conn.Exec(sql, p.Id)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	return map[string]any{"message": "Updated", "status": "200"}
+
 }
 
 func (p *Project) Get() map[string]any {

@@ -13,13 +13,13 @@ func test() {
 	// 	fmt.Println(d.Id, d.Title, d.Shorthand)
 	// }
 	project := projects.Project{
-		Id: 5,
+		Id:       5,
+		Category: 1,
 	}
 
 	// res, _ := project.Exists()
 	// fmt.Print(res)
 	//
 
-	data := project.GetField([]string{"name", "description"})
-	fmt.Println(data)
+	fmt.Println(project.Update(map[string]any{"name": "1234", "sdfasef": "3432", "category": 2}))
 }
