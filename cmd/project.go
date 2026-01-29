@@ -19,6 +19,34 @@ import (
 var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Manage your projects with ease",
+	Run: func(cmd *cobra.Command, args []string) {
+		fav, favErr := cmd.Flags().GetBool("favorite")
+		comp, comErr := cmd.Flags().GetBool("completed")
+		projectMap := make(map[string]bool)
+		if favErr != nil {
+			fmt.Printf("Error: %s", favErr.Error())
+		}
+		if comErr != nil {
+			fmt.Printf("Error: %s", comErr.Error())
+		}
+		if !fav && !comp {
+			cmd.Help()
+			return
+		}
+		projectMap["favorite"] = fav
+		projectMap["completed"] = comp
+		res := projects.GetProjectWhere(projectMap)
+		if res["status"] != "200" {
+			fmt.Printf("Error: %s", res["message"])
+			os.Exit(1)
+		}
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+		fmt.Fprintln(w, "ID\tName\tPath\tCompleted\tFavourite\tDescription")
+		for _, data := range res["data"].([]projects.Project) {
+			fmt.Fprintf(w, "%d\t%s\t%t\t%t\t%s\n", data.Id, data.Title, data.Completed, data.Favourite, data.Description)
+		}
+		w.Flush()
+	},
 }
 
 var projectAddCmd = &cobra.Command{
@@ -143,7 +171,7 @@ var projectListAllCmd = &cobra.Command{
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintln(w, "ID\tName\tPath\tCompleted\tFavourite\tDescription")
 		for _, data := range res["data"].([]projects.Project) {
-			fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%s\n", data.Id, data.Title, data.Path, data.Completed, data.Favourite, data.Description)
+			fmt.Fprintf(w, "%d\t%s\t%t\t%t\t%s\n", data.Id, data.Title, data.Completed, data.Favourite, data.Description)
 		}
 		w.Flush()
 
@@ -188,6 +216,8 @@ var projectEditCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(projectCmd)
 	projectCmd.AddCommand(projectAddCmd, projectDeleteCmd, projectEditCmd, projectUpdateCmd, projectViewCmd, projectListAllCmd)
+	projectCmd.Flags().BoolP("favorite", "f", false, "List all favorite projects")
+	projectCmd.Flags().BoolP("completed", "c", false, "List all completed projects")
 
 	projectAddCmd.Flags().StringP("name", "n", "", "The name of the project")
 	projectAddCmd.Flags().StringP("description", "d", "", "The description of the project")

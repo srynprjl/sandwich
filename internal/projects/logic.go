@@ -117,7 +117,6 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 		return map[string]any{"message": err.Error(), "status": "500"}
 	}
 	return map[string]any{"message": "Updated", "status": "200"}
-
 }
 
 func (p *Project) Get() map[string]any {
@@ -223,4 +222,35 @@ func GetProjects(c category.Category) map[string]any {
 	}
 
 	return map[string]any{"message": "Fetched", "data": project, "status": "200"}
+}
+
+func GetProjectWhere(data map[string]bool) map[string]any {
+	var where []string
+	for k, v := range data {
+		if v != false {
+			where = append(where, fmt.Sprintf("%s=%d", k, 1))
+		}
+	}
+	// fmt.Println(data)
+	whereClause := strings.Join(where, " AND ")
+	// fmt.Println(whereClause)
+	sql := fmt.Sprintf("SELECT * FROM projects WHERE %s;", whereClause)
+	db := utils.DB
+	db.Connect()
+	defer db.Close()
+	rows, err := db.Conn.Query(sql)
+	if err != nil {
+		return map[string]any{"message": err.Error(), "status": "500"}
+	}
+	var projects []Project
+	for rows.Next() {
+		var p Project
+		var pf ProjectFields
+		pf.Init(&p)
+		rows.Scan(pf.Field...)
+		projects = append(projects, p)
+
+	}
+
+	return map[string]any{"message": "Fetched", "data": projects, "status": "200"}
 }
