@@ -15,22 +15,20 @@ type Database struct {
 }
 
 var DB = Database{
-	Name:     DATABASE_NAME,
-	Location: DATABASE_LOCATION,
+	Name:     Conf.Database.Name,
+	Location: Conf.Database.Location,
 }
 
 func (d *Database) Connect() {
 	_, err := os.Stat(d.Location)
 	if os.IsNotExist(err) {
 		os.MkdirAll(d.Location, 0777)
-		if err != nil {
-			log.Fatal(err)
-		}
 	}
 	fullPath := d.Location + d.Name + ".db"
 	_, fileErr := os.Stat(fullPath)
 	if os.IsNotExist(fileErr) {
 		_, err = os.Create(fullPath)
+		d.CreateInitialTables()
 		if err != nil {
 			log.Fatal(err)
 		}

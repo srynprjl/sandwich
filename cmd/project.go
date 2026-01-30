@@ -221,7 +221,7 @@ func init() {
 
 	projectAddCmd.Flags().StringP("name", "n", "", "The name of the project")
 	projectAddCmd.Flags().StringP("description", "d", "", "The description of the project")
-	projectAddCmd.Flags().StringP("path", "p", utils.DEFAULT_PROJECT_LOCATION, "The path of the project")
+	projectAddCmd.Flags().StringP("path", "p", utils.Conf.ProjectLocation, "The path of the project")
 	projectAddCmd.Flags().BoolP("favorite", "f", false, "Is the project your favourite.")
 	projectAddCmd.Flags().BoolP("completed", "c", false, "Is the project finished.")
 
