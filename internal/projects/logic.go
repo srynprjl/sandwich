@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/utils"
+	"github.com/srynprjl/sandwich/utils/db"
 )
 
 func (p *Project) MapProject() map[string]any {
@@ -18,7 +18,7 @@ func (p *Project) MapProject() map[string]any {
 
 func (p *Project) Exists() (bool, error) {
 	var exists bool = false
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 
@@ -40,7 +40,7 @@ func (p *Project) Exists() (bool, error) {
 }
 
 func (p *Project) Add() map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	c := category.Category{Id: p.Category}
@@ -60,7 +60,7 @@ func (p *Project) Add() map[string]any {
 }
 
 func (p *Project) Remove() map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	sqlStatement := "DELETE FROM projects WHERE id=? AND category=?"
@@ -90,7 +90,7 @@ func schemaUpdate(values map[string]any) map[string]any {
 }
 
 func (p *Project) Update(newValues map[string]any) map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	if exists, err := p.Exists(); !exists {
@@ -122,7 +122,7 @@ func (p *Project) Update(newValues map[string]any) map[string]any {
 func (p *Project) Get() map[string]any {
 	var fields ProjectFields
 	fields.Init(p)
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	id := p.Id
@@ -143,7 +143,7 @@ func (p *Project) Get() map[string]any {
 
 func GetRandom() map[string]any {
 	var p Project
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	var fields ProjectFields
@@ -157,7 +157,7 @@ func GetRandom() map[string]any {
 }
 
 func GetNRandom(n int) map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	var projects []Project
@@ -178,7 +178,7 @@ func GetNRandom(n int) map[string]any {
 }
 
 func (p *Project) GetField(field []string) map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	id := p.Id
@@ -197,7 +197,7 @@ func (p *Project) GetField(field []string) map[string]any {
 }
 
 func GetProjects(c category.Category) map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	id := c.Id
@@ -235,7 +235,7 @@ func GetProjectWhere(data map[string]bool) map[string]any {
 	whereClause := strings.Join(where, " AND ")
 	// fmt.Println(whereClause)
 	sql := fmt.Sprintf("SELECT * FROM projects WHERE %s;", whereClause)
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	rows, err := db.Conn.Query(sql)

@@ -20,16 +20,20 @@ type WebConfig struct {
 }
 
 type Table struct {
-	Columns       []string     `yaml:"columns"`
-	ColumnTypes   []string     `yaml:"col_types"`
-	PrimaryKey    string       `yaml:"primary_key"`
-	AutoIncrement []string     `yaml:"auto_increment"`
-	ForeignKey    []ForeignKey `yaml:"foreign_key"`
+	Columns       []string         `yaml:"columns"`
+	ColumnTypes   []string         `yaml:"col_types"`
+	PrimaryKey    string           `yaml:"primary_key"`
+	AutoIncrement []string         `yaml:"auto_increment"`
+	ForeignKey    []ForeignKey     `yaml:"foreign_key"`
+	Unique        []string         `yaml:"unique"`
+	NotNull       []string         `yaml:"not_null"`
+	Default       []map[string]any `yaml:"default"`
 }
 
 type ForeignKey struct {
-	Field string    `yaml:"field"`
-	To    Reference `yaml:"to"`
+	Field    string    `yaml:"field"`
+	To       Reference `yaml:"to"`
+	OnDelete string    `yaml:"on_delete"`
 }
 
 type Reference struct {
@@ -93,17 +97,20 @@ func NewConfig() {
 			},
 			Tables: map[string]Table{
 				"categories": Table{
-					Columns:       []string{"uuid", "id", "name", "shorthand", "description"},
-					ColumnTypes:   []string{"string", "int", "string", "string", "string"},
-					PrimaryKey:    "uuid",
+					Columns:       []string{"id", "uuid", "name", "shorthand", "description"},
+					ColumnTypes:   []string{"int", "string", "string", "string", "string"},
+					PrimaryKey:    "id",
 					AutoIncrement: []string{"id"},
+					Unique:        []string{"uuid"},
 				},
 				"projects": Table{
-					Columns:       []string{"uuid", "id", "name", "shorthand", "description", "path", "favorite", "progress", "released", "github", "url", "category"},
-					ColumnTypes:   []string{"string", "int", "string", "string", "string", "string", "boolean", "boolean", "boolean", "string", "string", "string"},
-					PrimaryKey:    "uuid",
+					Columns:       []string{"id", "uuid", "name", "shorthand", "description", "path", "favorite", "progress", "released", "github", "url", "category"},
+					ColumnTypes:   []string{"int", "string", "string", "string", "string", "string", "boolean", "boolean", "boolean", "string", "string", "int"},
+					PrimaryKey:    "id",
 					AutoIncrement: []string{"id"},
-					ForeignKey:    []ForeignKey{ForeignKey{Field: "category", To: Reference{Table: "categories", Field: "uuid"}}},
+					Unique:        []string{"uuid"},
+					ForeignKey:    []ForeignKey{{Field: "category", To: Reference{Table: "categories", Field: "id"}}},
+					Default:       []map[string]any{{"category": 0}},
 				},
 			},
 		}

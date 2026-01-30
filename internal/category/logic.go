@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/srynprjl/sandwich/utils"
+	"github.com/srynprjl/sandwich/utils/db"
 )
 
 func whereClause(id int, shorthand string) (string, []any) {
@@ -24,7 +24,7 @@ func whereClause(id int, shorthand string) (string, []any) {
 }
 
 func (c *Category) DoesExists() (bool, error) {
-	conn := utils.DB
+	conn := db.DB
 	conn.Connect()
 	defer conn.Close()
 	sqlS := "SELECT 1 FROM categories WHERE id=? LIMIT 1;"
@@ -40,7 +40,7 @@ func (c *Category) DoesExists() (bool, error) {
 }
 
 func (c *Category) Add() map[string]any {
-	conn := utils.DB
+	conn := db.DB
 	conn.Connect()
 	defer conn.Close()
 	sql := `
@@ -55,7 +55,7 @@ func (c *Category) Add() map[string]any {
 }
 
 func (c *Category) Delete() map[string]any {
-	conn := utils.DB
+	conn := db.DB
 	conn.Connect()
 	defer conn.Close()
 	exists, existErr := c.DoesExists()
@@ -78,7 +78,7 @@ func (c *Category) Delete() map[string]any {
 }
 
 func (c *Category) Update() map[string]any {
-	conn := utils.DB
+	conn := db.DB
 	conn.Connect()
 	defer conn.Conn.Close()
 	exists, existErr := c.DoesExists()
@@ -112,7 +112,7 @@ func (c *Category) Update() map[string]any {
 }
 
 func (c *Category) GetField(field []string) map[string]any {
-	db := utils.DB
+	db := db.DB
 	db.Connect()
 	defer db.Close()
 	id := c.Id
@@ -131,7 +131,7 @@ func (c *Category) GetField(field []string) map[string]any {
 }
 
 func GetAll() map[string]any {
-	conn := utils.DB
+	conn := db.DB
 	conn.Connect()
 	defer conn.Conn.Close()
 	sqlStatement := "SELECT * FROM categories"
