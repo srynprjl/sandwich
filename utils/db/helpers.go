@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/srynprjl/sandwich/utils"
+	"github.com/srynprjl/sandwich/utils/config"
 )
 
-func BuildForeignKeyStatement(foreignKey []utils.ForeignKey) string {
+func BuildForeignKeyStatement(foreignKey []config.ForeignKey) string {
 	var foreign_keys []string
 	for _, data := range foreignKey {
 		var sb strings.Builder
@@ -20,8 +20,21 @@ func BuildForeignKeyStatement(foreignKey []utils.ForeignKey) string {
 	return strings.Join(foreign_keys, ",")
 }
 
-func BuildSQLTableQuery(columns []string, coltype []string, primary_key string, autoincrement []string, unique []string, notNull []string, defaults []map[string]any, foreignKey []utils.ForeignKey) string {
+func BuildSQLTableQuery(columns []string, coltype []string, constraints config.Constraints) string {
 	var queryData []string
+	auto := make(map[string]bool)
+	for _, v := range constraints.AutoIncrement {
+		auto[v] = true
+	}
+	uniq := make(map[string]bool)
+	for _, v := range constraints.Unique {
+		uniq[v] = true
+	}
+	nnull := make(map[string]bool)
+	for _, v := range constraints.NotNull {
+		nnull[v] = true
+	}
+
 	for i, data := range columns {
 		var datatype string
 		switch coltype[i] {
@@ -34,21 +47,10 @@ func BuildSQLTableQuery(columns []string, coltype []string, primary_key string, 
 		}
 		var sb strings.Builder
 		sb.WriteString(data + " " + datatype)
-		if primary_key == data {
+		if constraints.PrimaryKey == data {
 			sb.WriteString(" PRIMARY KEY")
 		}
-		auto := make(map[string]bool)
-		for _, v := range autoincrement {
-			auto[v] = true
-		}
-		uniq := make(map[string]bool)
-		for _, v := range unique {
-			uniq[v] = true
-		}
-		nnull := make(map[string]bool)
-		for _, v := range notNull {
-			nnull[v] = true
-		}
+
 		if auto[data] {
 			sb.WriteString(" AUTOINCREMENT")
 		}
@@ -59,17 +61,19 @@ func BuildSQLTableQuery(columns []string, coltype []string, primary_key string, 
 			sb.WriteString(" NOT NULL")
 		}
 
-		if len(defaults) != 0 {
-			for i := range defaults {
-				if val, ok := defaults[i][data]; ok {
+		// fix this later... make it more efficient later ig
+		if len(constraints.Default) != 0 {
+			for i := range constraints.Default {
+				if val, ok := constraints.Default[i][data]; ok {
 					fmt.Fprintf(&sb, " DEFAULT %v", val)
 				}
 			}
 		}
+
 		queryData = append(queryData, sb.String())
 	}
-	if len(foreignKey) != 0 {
-		queryData = append(queryData, BuildForeignKeyStatement(foreignKey))
+	if len(constraints.ForeignKey) != 0 {
+		queryData = append(queryData, BuildForeignKeyStatement(constraints.ForeignKey))
 	}
 	return strings.Join(queryData, ",")
 }

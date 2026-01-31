@@ -3,17 +3,19 @@ package db
 import (
 	"errors"
 	"fmt"
-	"github.com/srynprjl/sandwich/utils"
+
+	"github.com/srynprjl/sandwich/utils/config"
 )
 
-func (db *Database) CreateTable(name string, columns []string, coltype []string, primary_key string, autoincrement []string, unique []string, notNull []string, foreignKey []utils.ForeignKey, defaults []map[string]any) error {
+func (db *Database) CreateTable(name string, columns []string, coltype []string, constraints config.Constraints) error {
 	if len(columns) != len(coltype) {
 		return errors.New("difference in number between columns and columns type")
 	}
-	sql_query := BuildSQLTableQuery(columns, coltype, primary_key, autoincrement, unique, notNull, defaults, foreignKey)
-	final_query := fmt.Sprintf("CREATE TABLE %s(%s)", name, sql_query)
+	sql_query := BuildSQLTableQuery(columns, coltype, constraints)
+	final_query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s(%s)", name, sql_query)
 	DB.Connect()
 	conn := DB.Conn
+	defer DB.Close()
 	_, err := conn.Exec(final_query)
 	if err != nil {
 		return err
@@ -22,8 +24,8 @@ func (db *Database) CreateTable(name string, columns []string, coltype []string,
 }
 
 func (db *Database) CreateInitialTables() error {
-	for key, data := range utils.Conf.Tables {
-		err := DB.CreateTable(key, data.Columns, data.ColumnTypes, data.PrimaryKey, data.AutoIncrement, data.Unique, data.NotNull, data.ForeignKey, data.Default)
+	for key, data := range config.Conf.Tables {
+		err := DB.CreateTable(key, data.Columns, data.ColumnTypes, data.Constraints)
 		if err != nil {
 			return err
 		}

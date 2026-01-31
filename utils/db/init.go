@@ -6,7 +6,7 @@ import (
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/srynprjl/sandwich/utils"
+	"github.com/srynprjl/sandwich/utils/config"
 )
 
 type Database struct {
@@ -19,8 +19,8 @@ var DB Database
 
 func InitializeDatabase() {
 	DB = Database{
-		Name:     utils.Conf.Database.Name,
-		Location: utils.Conf.Database.Location,
+		Name:     config.Conf.Database.Name,
+		Location: config.Conf.Database.Location,
 	}
 }
 

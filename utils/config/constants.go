@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"fmt"
@@ -7,9 +7,9 @@ import (
 )
 
 var Conf Config
-var USER = os.Getenv("USER")
 var PROJECT_NAME = "sandwich"
-var CONFIG_LOCATION = fmt.Sprintf("/home/%s/.config/%s/", USER, PROJECT_NAME)
+var lol, _ = os.UserConfigDir()
+var CONFIG_LOCATION = fmt.Sprintf("%s/%s/", lol, PROJECT_NAME)
 
 func InitializeConfig() {
 	var err error
@@ -17,9 +17,4 @@ func InitializeConfig() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	PrintConfig()
-}
-
-func PrintConfig() {
-	fmt.Println()
 }
