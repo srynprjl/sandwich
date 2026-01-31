@@ -138,13 +138,13 @@ func getDefaultValues(tableName string, fieldName string) (any, error) {
 	return value, nil
 }
 
-func joinStatements(fields map[string]any) (string, []any) {
+func joinStatements(fields map[string]any, join string) (string, []any) {
 	var keys []string
 	var values []any
 	for k, v := range fields {
 		keys = append(keys, fmt.Sprintf("%s=?", k))
 		values = append(values, v)
 	}
-	keysStatement := strings.Join(keys, " and ")
+	keysStatement := strings.Join(keys, join)
 	return keysStatement, values
 }

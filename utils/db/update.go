@@ -11,11 +11,12 @@ import (
 // }
 
 func (d *Database) UpdateItems(tableName string, fields map[string]any, conditions map[string]any) error {
+	fmt.Println(fields)
 	if len(fields) == 0 || len(conditions) == 0 {
 		return errors.New("provide the fields or conditon")
 	}
-	fkeysStatement, fvalues := joinStatements(fields)
-	ckeysStatement, cvalues := joinStatements(conditions)
+	fkeysStatement, fvalues := joinStatements(fields, ",")
+	ckeysStatement, cvalues := joinStatements(conditions, " and ")
 	sqlStatement := fmt.Sprintf("UPDATE %s SET %s WHERE %s", tableName, fkeysStatement, ckeysStatement)
 	fmt.Println(sqlStatement)
 	values := append(fvalues, cvalues...)

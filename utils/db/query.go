@@ -16,7 +16,7 @@ func (d *Database) Query(tableName string, fields []string, condition map[string
 	}
 	sqlStatement := fmt.Sprintf("SELECT %s FROM %s", field, tableName)
 	if len(condition) != 0 {
-		statement, values = joinStatements(condition)
+		statement, values = joinStatements(condition, " and ")
 		sqlStatement = fmt.Sprintf("%s WHERE %s", sqlStatement, statement)
 	}
 	if len(extras) != 0 {
