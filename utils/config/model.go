@@ -12,35 +12,34 @@ type WebConfig struct {
 }
 
 type Table struct {
-	Columns     []string    `yaml:"columns"`
-	ColumnTypes []string    `yaml:"col_types"`
-	Constraints Constraints `yaml:"constraints"`
+	Columns     []string
+	ColumnTypes []string
+	Defaults    map[string]any
+	Constraints Constraints
 }
 
 type Constraints struct {
-	PrimaryKey    string           `yaml:"primary_key"`
-	AutoIncrement []string         `yaml:"auto_increment"`
-	ForeignKey    []ForeignKey     `yaml:"foreign_key"`
-	Unique        []string         `yaml:"unique"`
-	NotNull       []string         `yaml:"not_null"`
-	Default       []map[string]any `yaml:"default"`
+	PrimaryKey    string
+	AutoIncrement []string
+	ForeignKey    []ForeignKey
+	Unique        []string
+	NotNull       []string
+	Default       []map[string]any
 }
 
 type ForeignKey struct {
-	Field    string    `yaml:"field"`
-	To       Reference `yaml:"to"`
-	OnDelete string    `yaml:"on_delete"`
+	Field    string
+	To       Reference
+	OnDelete string
 }
 
 type Reference struct {
-	Table string `yaml:"table"`
-	Field string `yaml:"field"`
+	Table string
+	Field string
 }
 
 type Config struct {
-	Version         string           `yaml:"version"`
-	ProjectLocation string           `yaml:"project_location"`
-	Database        DatabaseConfig   `yaml:"db"`
-	Web             WebConfig        `yaml:"web"`
-	Tables          map[string]Table `yaml:"tables"`
+	ProjectLocation string         `yaml:"project_location"`
+	Database        DatabaseConfig `yaml:"db"`
+	Web             WebConfig      `yaml:"web"`
 }

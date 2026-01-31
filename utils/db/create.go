@@ -11,12 +11,8 @@ func (db *Database) CreateTable(name string, columns []string, coltype []string,
 	if len(columns) != len(coltype) {
 		return errors.New("difference in number between columns and columns type")
 	}
-	sql_query := BuildSQLTableQuery(columns, coltype, constraints)
-	final_query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s(%s)", name, sql_query)
-	DB.Connect()
-	conn := DB.Conn
-	defer DB.Close()
-	_, err := conn.Exec(final_query)
+	final_query := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s(%s)", name, BuildSQLTableQuery(columns, coltype, constraints))
+	err := execute(db, final_query)
 	if err != nil {
 		return err
 	}

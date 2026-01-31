@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -76,4 +77,74 @@ func BuildSQLTableQuery(columns []string, coltype []string, constraints config.C
 		queryData = append(queryData, BuildForeignKeyStatement(constraints.ForeignKey))
 	}
 	return strings.Join(queryData, ",")
+}
+
+func execute(d *Database, query string, args ...any) error {
+	d.Connect()
+	conn := d.Conn
+	defer d.Close()
+	_, err := conn.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func query(d *Database, query string, args ...any) ([]map[string]any, error) {
+	d.Connect()
+	defer d.Close()
+	rows, err := d.Conn.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	cols, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	var data []map[string]any
+	for rows.Next() {
+		columns := make([]any, len(cols))
+		columnPointers := make([]any, len(cols))
+		for i := range columns {
+			columnPointers[i] = &columns[i]
+		}
+
+		if err := rows.Scan(columnPointers...); err != nil {
+			return nil, err
+		}
+
+		rowMap := make(map[string]any)
+		for i, colName := range cols {
+			val := columns[i]
+			rowMap[colName] = val
+		}
+		data = append(data, rowMap)
+	}
+	return data, nil
+
+}
+
+func getFields(tableName string) []string {
+	return config.DefaultTables[tableName].Columns[1:]
+}
+
+func getDefaultValues(tableName string, fieldName string) (any, error) {
+	value, ok := config.DefaultTables[tableName].Defaults[fieldName]
+	if !ok {
+		return "", errors.New(fieldName + " is required.")
+	}
+	return value, nil
+}
+
+func joinStatements(fields map[string]any) (string, []any) {
+	var keys []string
+	var values []any
+	for k, v := range fields {
+		keys = append(keys, fmt.Sprintf("%s=?", k))
+		values = append(values, v)
+	}
+	keysStatement := strings.Join(keys, " and ")
+	return keysStatement, values
 }
