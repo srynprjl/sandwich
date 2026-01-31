@@ -130,7 +130,7 @@ func getFields(tableName string) []string {
 	return config.DefaultTables[tableName].Columns[1:]
 }
 
-func getDefaultValues(tableName string, fieldName string) (any, error) {
+func GetDefaultValues(tableName string, fieldName string) (any, error) {
 	value, ok := config.DefaultTables[tableName].Defaults[fieldName]
 	if !ok {
 		return "", errors.New(fieldName + " is required.")

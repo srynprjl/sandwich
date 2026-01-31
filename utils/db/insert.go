@@ -18,7 +18,7 @@ func (d *Database) InsertOne(tableName string, values map[string]any) error {
 		} else {
 			v, ok := values[field]
 			if !ok {
-				data, err := getDefaultValues(tableName, field)
+				data, err := GetDefaultValues(tableName, field)
 				if err != nil {
 					return err
 				}
