@@ -2,15 +2,17 @@ package projects
 
 type Project struct {
 	Id          int    `json:"id"`
+	Uuid        string `json:"uuid"`
+	ProjectId   string `json:"shorthand"`
 	Title       string `json:"name"`
 	Description string `json:"description"`
 	Path        string `json:"path"`
 	Favourite   bool   `json:"favorite"`
-	Completed   bool   `json:"completed"`
+	Completed   bool   `json:"released"`
+	InProgress  bool   `json:"progress"`
+	Github      string `json:"github"`
+	URL         string `json:"url"`
 	Category    int    `json:"category"`
-	//Working     bool
-	//ProjectId string
-	//GitHubURL string
 }
 
 type ProjectFields struct {
@@ -18,5 +20,5 @@ type ProjectFields struct {
 }
 
 func (p *ProjectFields) Init(data *Project) {
-	p.Field = []any{&data.Id, &data.Title, &data.Description, &data.Completed, &data.Favourite, &data.Path, &data.Category}
+	p.Field = []any{&data.Id, &data.Uuid, &data.ProjectId, &data.Title, &data.Description, &data.Path, &data.Favourite, &data.Completed, &data.InProgress, &data.Github, &data.URL, &data.Category}
 }

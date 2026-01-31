@@ -6,10 +6,12 @@ import (
 	"os"
 )
 
+const VERSION = "1.0.0a"
+const PROJECT_NAME = "sandwich"
+
 var Conf Config
-var PROJECT_NAME = "sandwich"
-var lol, _ = os.UserConfigDir()
-var CONFIG_LOCATION = fmt.Sprintf("%s/%s/", lol, PROJECT_NAME)
+var CONFIG_DIR, _ = os.UserConfigDir()
+var CONFIG_LOCATION = fmt.Sprintf("%s/%s/", CONFIG_DIR, PROJECT_NAME)
 
 func InitializeConfig() {
 	var err error

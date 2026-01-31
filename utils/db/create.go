@@ -24,7 +24,7 @@ func (db *Database) CreateTable(name string, columns []string, coltype []string,
 }
 
 func (db *Database) CreateInitialTables() error {
-	for key, data := range config.Conf.Tables {
+	for key, data := range config.DefaultTables {
 		err := DB.CreateTable(key, data.Columns, data.ColumnTypes, data.Constraints)
 		if err != nil {
 			return err
