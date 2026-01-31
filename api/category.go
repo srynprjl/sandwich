@@ -19,7 +19,6 @@ func CategoryGetAll(r http.ResponseWriter, w *http.Request) {
 	} else {
 		fmt.Fprintln(r, resp["message"].(string))
 	}
-
 }
 
 func CategoryAdd(r http.ResponseWriter, w *http.Request) {
@@ -28,11 +27,10 @@ func CategoryAdd(r http.ResponseWriter, w *http.Request) {
 	json.NewDecoder(w.Body).Decode(&data)
 	resp := c.Add(data)
 	if resp["status"] == "201" {
-		fmt.Fprintf(r, "Created")
+		fmt.Fprintln(r, resp["message"])
 	} else {
-		fmt.Fprintf(r, "Failed")
+		fmt.Fprintln(r, resp["message"])
 	}
-
 }
 
 func CategoryDelete(r http.ResponseWriter, w *http.Request) {
@@ -77,5 +75,5 @@ func CategoryGetAllProjects(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, resp["message"])
 		return
 	}
-	json.NewEncoder(w).Encode(resp["data"].([]projects.Project))
+	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
 }

@@ -27,7 +27,7 @@ var DefaultTables = map[string]Table{
 	"projects": Table{
 		Columns:     []string{"id", "uuid", "name", "shorthand", "description", "path", "favorite", "progress", "released", "github", "url", "category"},
 		ColumnTypes: []string{"int", "string", "string", "string", "string", "string", "boolean", "boolean", "boolean", "string", "string", "int"},
-		Defaults:    map[string]any{"name": "New Project", "description": "A new project", "favorite": false, "progress": false, "released": false, "github": "", "url": "", "category": 0},
+		Defaults:    map[string]any{"name": "New Project", "description": "A new project", "path": Conf.ProjectLocation, "favorite": false, "progress": false, "released": false, "github": "", "url": "", "category": 0},
 		Constraints: Constraints{
 			PrimaryKey:    "id",
 			AutoIncrement: []string{"id"},

@@ -14,11 +14,3 @@ type Project struct {
 	URL         string `json:"url"`
 	Category    int    `json:"category"`
 }
-
-type ProjectFields struct {
-	Field []any
-}
-
-func (p *ProjectFields) Init(data *Project) {
-	p.Field = []any{&data.Id, &data.Uuid, &data.ProjectId, &data.Title, &data.Description, &data.Path, &data.Favourite, &data.Completed, &data.InProgress, &data.Github, &data.URL, &data.Category}
-}

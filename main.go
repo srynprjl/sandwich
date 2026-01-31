@@ -6,7 +6,6 @@ import (
 	"github.com/srynprjl/sandwich/utils/db"
 )
 
-// import "github.com/srynprjl/sandwich/cmd"
 func startup() {
 	config.NewConfig()
 	config.InitializeConfig()
