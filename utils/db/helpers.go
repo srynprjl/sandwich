@@ -110,11 +110,9 @@ func query(d *Database, query string, args ...any) ([]map[string]any, error) {
 		for i := range columns {
 			columnPointers[i] = &columns[i]
 		}
-
 		if err := rows.Scan(columnPointers...); err != nil {
 			return nil, err
 		}
-
 		rowMap := make(map[string]any)
 		for i, colName := range cols {
 			val := columns[i]

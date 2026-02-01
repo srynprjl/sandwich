@@ -10,8 +10,12 @@ import (
 )
 
 func (p *Project) Exists() (bool, error) {
-	if p.Id <= 0 || p.Category <= 0 {
-		return false, errors.New("Id/Category should be  given.")
+	if p.Id <= 0 {
+		return false, errors.New("Id should be  given.")
+	}
+	if p.Category == 0 {
+		d := p.GetField([]string{"category"})["data"].(map[string]any)
+		p.Category = int(d["category"].(int64))
 	}
 	exists, err := db.DB.CheckExists("projects", map[string]any{"id": p.Id, "category": p.Category})
 	if err != nil {
@@ -41,17 +45,20 @@ func (p *Project) Add(insertData map[string]any) map[string]any {
 
 func (p *Project) Remove() map[string]any {
 	if p.Category == 0 {
-		p.Category = p.GetField([]string{"category"})["data"].(int)
+		d := p.GetField([]string{"category"})["data"].(map[string]any)
+		p.Category = int(d["category"].(int64))
 	}
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
-			return map[string]any{"message": "Failed.", "status": "500"}
+			return map[string]any{"message": err.Error(), "status": "500"}
 		}
 		return map[string]any{"message": "No project found in that category", "status": "400"}
 	}
-	err := db.DB.DeleteItem("projects", map[string]any{"id": p.Id, "category": p.Category})
+	deleteConditions := map[string]any{"id": p.Id, "category": p.Category}
+
+	err := db.DB.DeleteItem("projects", deleteConditions)
 	if err != nil {
-		return map[string]any{"message": "Failed.", "status": "500"}
+		return map[string]any{"message": err.Error(), "status": "500"}
 	}
 	return map[string]any{"message": "Deleted.", "status": "201"}
 }
@@ -69,7 +76,8 @@ func schemaUpdate(values map[string]any) map[string]any {
 
 func (p *Project) Update(updateData map[string]any) map[string]any {
 	if p.Category == 0 {
-		p.Category = p.GetField([]string{"category"})["data"].(int)
+		d := p.GetField([]string{"category"})["data"].(map[string]any)
+		p.Category = int(d["category"].(int64))
 	}
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
@@ -90,7 +98,8 @@ func (p *Project) Update(updateData map[string]any) map[string]any {
 
 func (p *Project) Get() map[string]any {
 	if p.Category == 0 {
-		p.Category = p.GetField([]string{"category"})["data"].(int)
+		d := p.GetField([]string{"category"})["data"].(map[string]any)
+		p.Category = int(d["category"].(int64))
 	}
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
@@ -124,7 +133,7 @@ func GetNRandom(n int) map[string]any {
 func (p *Project) GetField(field []string) map[string]any {
 	data, err := db.DB.Query("projects", field, map[string]any{"id": p.Id})
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return map[string]any{"message": err.Error(), "status": "500", "data": map[string]any{}}
 	}
 	return map[string]any{"message": "Fetched.", "data": data[0], "status": "200"}
 }
