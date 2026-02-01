@@ -11,33 +11,29 @@ import (
 )
 
 func CategoryGetAll(r http.ResponseWriter, w *http.Request) {
-
 	r.Header().Set("Content-Type", "application/json")
 	resp := category.GetAll()
 	if resp["status"] == "200" {
-		data := resp["data"].([]category.Category)
+		data := resp["data"].([]map[string]any)
 		json.NewEncoder(r).Encode(data)
 	} else {
-		fmt.Fprintf(r, resp["message"].(string))
+		fmt.Fprintln(r, resp["message"].(string))
 	}
-
 }
 
 func CategoryAdd(r http.ResponseWriter, w *http.Request) {
-
 	var c category.Category
-	json.NewDecoder(w.Body).Decode(&c)
-	resp := c.Add()
+	var data = make(map[string]any)
+	json.NewDecoder(w.Body).Decode(&data)
+	resp := c.Add(data)
 	if resp["status"] == "201" {
-		fmt.Fprintf(r, "Created")
+		fmt.Fprintln(r, resp["message"])
 	} else {
-		fmt.Fprintf(r, "Failed")
+		fmt.Fprintln(r, resp["message"])
 	}
-
 }
 
 func CategoryDelete(r http.ResponseWriter, w *http.Request) {
-
 	id, err := strconv.Atoi(w.PathValue("id"))
 	if err != nil {
 		fmt.Fprint(r, err.Error())
@@ -59,8 +55,9 @@ func CategoryUpdate(r http.ResponseWriter, w *http.Request) {
 		return
 	}
 	c := category.Category{Id: id}
-	json.NewDecoder(w.Body).Decode(&c)
-	resp := c.Update()
+	updateData := make(map[string]any)
+	json.NewDecoder(w.Body).Decode(&updateData)
+	resp := c.Update(updateData)
 	fmt.Fprint(r, resp["message"])
 
 }
@@ -78,5 +75,5 @@ func CategoryGetAllProjects(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, resp["message"])
 		return
 	}
-	json.NewEncoder(w).Encode(resp["data"].([]projects.Project))
+	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
 }

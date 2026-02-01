@@ -13,7 +13,8 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/internal/projects"
-	"github.com/srynprjl/sandwich/utils"
+	"github.com/srynprjl/sandwich/utils/config"
+	"github.com/srynprjl/sandwich/utils/db"
 )
 
 var projectCmd = &cobra.Command{
@@ -22,28 +23,34 @@ var projectCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fav, favErr := cmd.Flags().GetBool("favorite")
 		comp, comErr := cmd.Flags().GetBool("completed")
-		projectMap := make(map[string]bool)
+		progress, progressErr := cmd.Flags().GetBool("progress")
+		projectMap := make(map[string]any)
 		if favErr != nil {
 			fmt.Printf("Error: %s", favErr.Error())
 		}
 		if comErr != nil {
 			fmt.Printf("Error: %s", comErr.Error())
 		}
-		if !fav && !comp {
+		if progressErr != nil {
+			fmt.Printf("Error: %s", progressErr.Error())
+		}
+		if !fav && !comp && !progress {
 			cmd.Help()
 			return
 		}
 		projectMap["favorite"] = fav
-		projectMap["completed"] = comp
+		projectMap["released"] = comp
+		projectMap["progress"] = comp
 		res := projects.GetProjectWhere(projectMap)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s", res["message"])
 			os.Exit(1)
 		}
+		// fmt.Println(res["data"])
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-		fmt.Fprintln(w, "ID\tName\tPath\tCompleted\tFavourite\tDescription")
-		for _, data := range res["data"].([]projects.Project) {
-			fmt.Fprintf(w, "%d\t%s\t%t\t%t\t%s\n", data.Id, data.Title, data.Completed, data.Favourite, data.Description)
+		fmt.Fprintln(w, "ID\tUID\tName\tInProgress\tReleased\tFavourite\tDescription")
+		for _, data := range res["data"].([]map[string]any) {
+			fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%t\t%s\n", data["id"], data["shorthand"], data["name"], data["progress"], data["released"], data["favorite"], data["description"])
 		}
 		w.Flush()
 	},
@@ -64,13 +71,7 @@ var projectAddCmd = &cobra.Command{
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			newData[f.Name] = f.Value
 		})
-		byteData, _ := json.Marshal(newData)
-		err := json.Unmarshal(byteData, &p)
-		if err != nil {
-			fmt.Println("Error: couldn't convert data to object")
-			os.Exit(1)
-		}
-		res := p.Add()
+		res := p.Add(newData)
 		if res["status"] != "201" {
 			fmt.Printf("Error: %s", res["message"])
 			os.Exit(1)
@@ -93,10 +94,10 @@ var projectDeleteCmd = &cobra.Command{
 		p := projects.Project{Id: id, Category: catId}
 		res := p.Remove()
 		if res["status"] != "200" {
-			fmt.Printf("Error: %s", res["message"])
+			fmt.Printf("Error: %s\n", res["message"])
 			os.Exit(1)
 		}
-		fmt.Printf("Success: %s", res["message"])
+		fmt.Printf("Success: %s\n", res["message"])
 	},
 }
 
@@ -113,7 +114,9 @@ var projectUpdateCmd = &cobra.Command{
 		p := projects.Project{Id: id, Category: catId}
 		newData := make(map[string]any)
 		cmd.Flags().Visit(func(f *pflag.Flag) {
-			newData[f.Name] = f.Value
+			if f.Changed {
+				newData[f.Name] = f.Value
+			}
 		})
 		res := p.Update(newData)
 		if res["status"] != "200" {
@@ -142,12 +145,15 @@ var projectViewCmd = &cobra.Command{
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintln(w, "Column\tValue")
-		t := reflect.TypeOf(res["data"].(projects.Project))
-		v := reflect.ValueOf(res["data"].(projects.Project))
+		var project projects.Project
+		byteData, _ := json.Marshal(res["data"].(map[string]any))
+		json.Unmarshal(byteData, &project)
+		t := reflect.TypeFor[projects.Project]()
+		v := reflect.ValueOf(project)
 		for i := range t.NumField() {
 			fieldType := t.Field(i)
 			valueType := v.Field(i)
-			fmt.Fprintf(w, "%s\t%v\n", fieldType.Name, valueType.Interface())
+			fmt.Fprintf(w, "%s\t%v\n", fieldType.Name, valueType)
 		}
 		w.Flush()
 	},
@@ -169,12 +175,11 @@ var projectListAllCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-		fmt.Fprintln(w, "ID\tName\tPath\tCompleted\tFavourite\tDescription")
-		for _, data := range res["data"].([]projects.Project) {
-			fmt.Fprintf(w, "%d\t%s\t%t\t%t\t%s\n", data.Id, data.Title, data.Completed, data.Favourite, data.Description)
+		fmt.Fprintln(w, "ID\tUID\tName\tInProgress\tReleased\tFavourite\tDescription")
+		for _, data := range res["data"].([]map[string]any) {
+			fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%t\t%s\n", data["id"], data["shorthand"], data["name"], data["progress"], data["released"], data["favorite"], data["description"])
 		}
 		w.Flush()
-
 	},
 }
 
@@ -194,8 +199,7 @@ var projectEditCmd = &cobra.Command{
 			fmt.Printf("Error: %s\n", res["message"])
 			os.Exit(1)
 		}
-		path := res["data"].([]any)[0].(string)
-		fmt.Print(defaultEditor)
+		path := res["data"].(map[string]any)["path"].(string)
 		if defaultEditor == "" {
 			fmt.Println("Error: No default editor set. ")
 			os.Exit(1)
@@ -218,17 +222,28 @@ func init() {
 	projectCmd.AddCommand(projectAddCmd, projectDeleteCmd, projectEditCmd, projectUpdateCmd, projectViewCmd, projectListAllCmd)
 	projectCmd.Flags().BoolP("favorite", "f", false, "List all favorite projects")
 	projectCmd.Flags().BoolP("completed", "c", false, "List all completed projects")
-
-	projectAddCmd.Flags().StringP("name", "n", "", "The name of the project")
-	projectAddCmd.Flags().StringP("description", "d", "", "The description of the project")
-	projectAddCmd.Flags().StringP("path", "p", utils.Conf.ProjectLocation, "The path of the project")
-	projectAddCmd.Flags().BoolP("favorite", "f", false, "Is the project your favourite.")
-	projectAddCmd.Flags().BoolP("completed", "c", false, "Is the project finished.")
-
-	projectUpdateCmd.Flags().StringP("name", "n", "", "The name of the project")
-	projectUpdateCmd.Flags().StringP("description", "d", "", "The description of the project")
-	projectUpdateCmd.Flags().StringP("path", "p", "", "The path of the project")
-	projectUpdateCmd.Flags().BoolP("favorite", "f", false, "Is the project your favourite.")
-	projectUpdateCmd.Flags().BoolP("completed", "o", false, "Is the project finished.")
-	projectUpdateCmd.Flags().IntP("category", "c", 0, "Which category does it fall in?")
+	projectCmd.Flags().BoolP("progress", "p", false, "List all projects that are in progress")
+	fields := config.DefaultTables["projects"].Columns[2:]
+	for _, data := range fields {
+		var def, ok = db.GetDefaultValues("projects", data)
+		if ok == nil {
+			switch def := def.(type) {
+			case string:
+				projectAddCmd.Flags().String(data, def, fmt.Sprintf("The %s of your project", data))
+				projectUpdateCmd.Flags().String(data, "", fmt.Sprintf("The %s of your project", data))
+			case int:
+				if data != "category" {
+					projectAddCmd.Flags().Int(data, def, fmt.Sprintf("The %s of your project", data))
+				}
+				projectUpdateCmd.Flags().Int(data, 0, fmt.Sprintf("The %s of your project", data))
+			case bool:
+				projectAddCmd.Flags().Bool(data, def, fmt.Sprintf("The %s of your project", data))
+				projectUpdateCmd.Flags().Bool(data, false, fmt.Sprintf("The %s of your project", data))
+			}
+		} else {
+			projectAddCmd.Flags().String(data, "", fmt.Sprintf("The %s of your project (Required)", data))
+			projectAddCmd.MarkFlagRequired(data)
+			projectUpdateCmd.Flags().String(data, "", fmt.Sprintf("The %s of your project", data))
+		}
+	}
 }

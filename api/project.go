@@ -23,7 +23,7 @@ func ProjectGet(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, resp["message"].(string))
 		return
 	}
-	json.NewEncoder(w).Encode(resp["data"].(projects.Project))
+	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
 }
 
 func ProjectGetRandom(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func ProjectGetRandom(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, resp["message"].(string))
 		return
 	}
-	json.NewEncoder(w).Encode(resp["data"].(projects.Project))
+	json.NewEncoder(w).Encode(resp["data"].(map[string]any))
 }
 
 func ProjectGetNRandom(w http.ResponseWriter, r *http.Request) {
@@ -48,26 +48,29 @@ func ProjectGetNRandom(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, resp["message"].(string))
 		return
 	}
-	json.NewEncoder(w).Encode(resp["data"].([]projects.Project))
+	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
 }
 
 func ProjectAdd(w http.ResponseWriter, r *http.Request) {
 	catId, err := strconv.Atoi(r.PathValue("catId"))
 	if err != nil {
-		fmt.Fprintln(w, "Error")
+		fmt.Fprintln(w, "Error: "+err.Error())
 		return
 	}
 	p := projects.Project{Category: catId}
-	json.NewDecoder(r.Body).Decode(&p)
-	resp := p.Add()
+	data := make(map[string]any)
+	json.NewDecoder(r.Body).Decode(&data)
+	data["category"] = p.Category
+	resp := p.Add(data)
 	fmt.Fprintln(w, resp["message"].(string))
 }
 
 func ProjectDelete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.PathValue("id"))
 	catId, catErr := strconv.Atoi(r.PathValue("catId"))
+
 	if err != nil || catErr != nil {
-		fmt.Fprintln(w, "Error")
+		fmt.Fprintln(w, "Error: "+err.Error())
 		return
 	}
 	p := projects.Project{Id: id, Category: catId}
@@ -88,7 +91,6 @@ func ProjectUpdate(w http.ResponseWriter, r *http.Request) {
 	if jsonErr != nil {
 		fmt.Fprintln(w, "Error!")
 	}
-	fmt.Println(p, data)
 	resp := p.Update(data)
 	fmt.Fprintln(w, resp["message"])
 }

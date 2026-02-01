@@ -19,7 +19,7 @@ var webCmd = &cobra.Command{
 			fmt.Fprintf(os.Stderr, "Error: port must be between 1024 and 65535\n")
 			os.Exit(1)
 		}
-		api.Api(host, port)
+		api.Api("localhost", 5000)
 	},
 }
 

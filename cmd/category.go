@@ -7,37 +7,34 @@ import (
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/utils/config"
+	"github.com/srynprjl/sandwich/utils/db"
 )
 
 var categoryCmd = &cobra.Command{
 	Use:   "category",
 	Short: "Manage your categories",
-	Long:  `idk`,
 }
 
 var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add a category",
 	Run: func(cmd *cobra.Command, args []string) {
-		name, nameErr := cmd.Flags().GetString("name")
-		shorthand, shortHandErr := cmd.Flags().GetString("shorthand")
-		if nameErr != nil || shortHandErr != nil {
-			fmt.Println("Error: Something went wrong!")
-			os.Exit(1)
+		var data = make(map[string]any)
+		cmd.Flags().VisitAll(func(f *pflag.Flag) {
+			if f.Shorthand != "h" {
+				data[f.Name] = f.Value
+			}
+		})
+		var c category.Category
+		res := c.Add(data)
+		if res["status"] == "201" {
+			fmt.Println("Success: " + res["message"].(string))
+			return
 		}
-		if name == "" || shorthand == "" {
-			fmt.Println("Error: You need to use both --name and --shorthand flag ")
-			os.Exit(1)
-		}
-		c := category.Category{Title: name, Shorthand: shorthand}
-		res := c.Add()
-
-		if res["status"] != "201" {
-			fmt.Printf("Error: %s", res["message"])
-			os.Exit(1)
-		}
-		fmt.Printf("Success: %s", res["message"])
+		fmt.Println("Failed: " + res["message"].(string))
 	},
 }
 
@@ -48,16 +45,15 @@ var deleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		id, err := strconv.Atoi(args[0])
 		if err != nil {
-			fmt.Printf("Error: the argument couldn't be converted to string")
-			os.Exit(1)
+			fmt.Println("Error:", err.Error())
 		}
 		c := category.Category{Id: id}
 		res := c.Delete()
-		if res["status"] == "200" {
-			fmt.Printf("Success: %s", res["message"])
-		} else {
-			fmt.Printf("Error: %s", res["message"])
+		if res["status"] != "200" {
+			fmt.Println("Failed: " + res["message"].(string))
+			return
 		}
+		fmt.Println("Success: " + res["message"].(string))
 	},
 }
 
@@ -66,50 +62,68 @@ var updateCmd = &cobra.Command{
 	Short: "Update a category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		id, _ := strconv.Atoi(args[0])
-		name, nameErr := cmd.Flags().GetString("name")
-		shorthand, shortHandErr := cmd.Flags().GetString("shorthand")
-		if nameErr != nil || shortHandErr != nil {
-			fmt.Println("Error: Something went wrong!")
-			os.Exit(1)
+		id, err := strconv.Atoi(args[0])
+		if err != nil {
+			fmt.Println("Error:", err.Error())
 		}
-		c := category.Category{Id: id, Title: name, Shorthand: shorthand}
-		res := c.Update()
+		updateData := make(map[string]any)
+		cmd.Flags().VisitAll(func(f *pflag.Flag) {
+			if f.Changed {
+				updateData[f.Name] = f.Value
+			}
+		})
+		c := category.Category{Id: id}
+		res := c.Update(updateData)
 		if res["status"] != "200" {
-			fmt.Printf("Error: %s\n", res["message"])
-			os.Exit(1)
+			fmt.Println("Failed: " + res["message"].(string))
+			return
 		}
-		fmt.Printf("Success: %s\n", res["message"])
+		fmt.Println("Success: " + res["message"].(string))
 	},
 }
 
 var viewCmd = &cobra.Command{
-	Use:   "view",
-	Short: "View all categories",
+	Use:   "list",
+	Short: "List all categories",
 	Run: func(cmd *cobra.Command, args []string) {
 		res := category.GetAll()
 		if res["status"] != "200" {
-			fmt.Printf("Error: %s", res["message"])
-			os.Exit(1)
+			fmt.Println("Failed: " + res["message"].(string))
+			return
 		}
-		w := tabwriter.NewWriter(os.Stdout, 0, 0, 4, ' ', 0)
-		fmt.Fprintln(w, "ID\tName\tShorthand")
-		for _, data := range res["data"].([]category.Category) {
-			fmt.Fprintf(w, "%d\t%s\t%s\n", data.Id, data.Title, data.Shorthand)
+		t := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+		fmt.Fprintf(t, "ID\tUID\tName\tDescription\n")
+		for _, data := range res["data"].([]map[string]any) {
+			fmt.Fprintf(t, "%v\t%v\t%v\t%v\n", data["id"], data["shorthand"], data["name"], data["description"])
 		}
-		w.Flush()
+		t.Flush()
+
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(categoryCmd)
 	categoryCmd.AddCommand(addCmd, deleteCmd, updateCmd, viewCmd)
-
-	addCmd.Flags().StringP("name", "n", "", "The name of your category")
-	addCmd.Flags().StringP("shorthand", "s", "", "The shorthand name for your category")
-
-	// update
-	updateCmd.Flags().StringP("name", "n", "", "The name of your category")
-	updateCmd.Flags().StringP("shorthand", "s", "", "The shorthand name for your category")
+	fields := config.DefaultTables["categories"].Columns[2:]
+	for _, data := range fields {
+		var def, ok = db.GetDefaultValues("categories", data)
+		if ok == nil {
+			switch def := def.(type) {
+			case string:
+				addCmd.Flags().String(data, def, fmt.Sprintf("The %s of your category", data))
+				updateCmd.Flags().String(data, "", fmt.Sprintf("The %s of your category", data))
+			case int:
+				addCmd.Flags().Int(data, def, fmt.Sprintf("The %s of your category", data))
+				updateCmd.Flags().Int(data, 0, fmt.Sprintf("The %s of your category", data))
+			case bool:
+				addCmd.Flags().Bool(data, def, fmt.Sprintf("The %s of your category", data))
+				updateCmd.Flags().Bool(data, false, fmt.Sprintf("The %s of your category", data))
+			}
+		} else {
+			addCmd.Flags().String(data, "", fmt.Sprintf("The %s of your category", data))
+			addCmd.MarkFlagRequired(data)
+			updateCmd.Flags().String(data, "", fmt.Sprintf("The %s of your category", data))
+		}
+	}
 
 }
