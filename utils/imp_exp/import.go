@@ -44,7 +44,7 @@ func Import(fileFormat string, file string) error {
 			}
 		}
 	}
-	return errors.New("this should happen?")
+	return nil
 }
 
 func Export(fileFormat string, path string, fileName string, tables ...string) error {
