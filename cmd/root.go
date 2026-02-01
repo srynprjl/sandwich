@@ -11,6 +11,18 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "sandwich",
 	Short: "A project management app for personal use",
+	Run: func(cmd *cobra.Command, args []string) {
+		var (
+			version = "1.0.0a.01"
+			date    = "02/02/2026"
+		)
+		if v, _ := cmd.Flags().GetBool("version"); v {
+			fmt.Printf("sandwich %v\nCopyright (C) 2026 sysnefo.\nBuilt on: %s", version, date)
+		} else {
+			cmd.Help()
+		}
+
+	},
 }
 
 var importCmd = &cobra.Command{
@@ -79,6 +91,8 @@ func Execute() {
 
 func init() {
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolP("version", "v", false, "Version of sandwich")
+
 	importCmd.Flags().StringP("format", "f", "json", "The format of the file you trying to import")
 	importCmd.Flags().StringP("path", "p", "", "The file you trying to import from")
 	importCmd.MarkFlagRequired("path")
