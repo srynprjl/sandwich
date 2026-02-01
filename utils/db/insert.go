@@ -14,7 +14,12 @@ func (d *Database) InsertOne(tableName string, values map[string]any) error {
 	for _, field := range fields {
 		var val any
 		if field == "uuid" {
-			val = uuid.New().String()
+			data, ok := values[field]
+			if !ok {
+				val = uuid.New().String()
+			} else {
+				val = data.(string)
+			}
 		} else {
 			v, ok := values[field]
 			if !ok {

@@ -43,3 +43,14 @@ func (d *Database) CheckExists(tableName string, data map[string]any) (bool, err
 	}
 	return true, nil
 }
+
+func (d *Database) CheckTableExists(tableName string) (bool, error) {
+	dat, err := query(d, "SELECT name FROM sqlite_master WHERE type='table' AND name=?", tableName)
+	if err != nil {
+		return false, err
+	}
+	if len(dat) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
