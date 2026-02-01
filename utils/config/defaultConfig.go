@@ -11,6 +11,9 @@ var DefaultConfig = Config{
 		Host: "127.0.0.1",
 		Port: 5000,
 	},
+	Bot: DiscordBot{
+		Token: "",
+	},
 }
 
 var DefaultTables = map[string]Table{

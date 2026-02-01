@@ -9,20 +9,20 @@ import (
 )
 
 func ConfigExists(Location string) bool {
-	_, err := os.Stat(Location + "config.yml")
-	if os.IsExist(err) {
-		return true
+	filePath := Location + "config.yml"
+	_, err := os.Stat(filePath)
+	if os.IsNotExist(err) {
+		return false
 	}
-	return false
+	return true
 }
 
 func ConfigDirExists(Location string) bool {
 	_, err := os.Stat(Location)
-
-	if os.IsExist(err) {
-		return true
+	if os.IsNotExist(err) {
+		return false
 	}
-	return false
+	return true
 }
 
 func CreateConfigDir(Location string) error {
@@ -38,7 +38,7 @@ func NewConfig() {
 		if !ConfigDirExists(CONFIG_LOCATION) {
 			CreateConfigDir(CONFIG_LOCATION)
 		}
-		_, err := os.Create(CONFIG_LOCATION + "/config.yml")
+		_, err := os.Create(CONFIG_LOCATION + "config.yml")
 		if err != nil {
 			log.Fatal(err)
 		}
