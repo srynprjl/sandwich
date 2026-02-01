@@ -2,6 +2,7 @@ package impexp
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,10 +12,10 @@ import (
 	"github.com/srynprjl/sandwich/utils/db"
 )
 
-func Import(fileFormat string, file string) {
+func Import(fileFormat string, file string) error {
 	// check fileFormat
 	if fileFormat != "json" {
-		log.Fatal("Wrong file format")
+		return errors.New("Wrong file format")
 	}
 	// check if fileExists
 	_, err := os.Stat(file)
@@ -25,7 +26,7 @@ func Import(fileFormat string, file string) {
 	// code to extract and run in database
 	data, err := os.ReadFile(file)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var mapData []map[string]any
 	json.Unmarshal(data, &mapData)
@@ -34,24 +35,28 @@ func Import(fileFormat string, file string) {
 			var value []map[string]any
 			byteValues, err := json.Marshal(v)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			json.Unmarshal(byteValues, &value)
-			db.DB.InsertMany(k, value)
+			derr := db.DB.InsertMany(k, value)
+			if derr != nil {
+				return derr
+			}
 		}
 	}
+	return errors.New("this should happen?")
 }
 
-func Export(fileFormat string, path string, fileName string, tables ...string) {
+func Export(fileFormat string, path string, fileName string, tables ...string) error {
 
 	// check if file format correct\
 	if fileFormat != "json" {
-		log.Fatal("Incorrect format")
+		return errors.New("Incorrect format")
 	}
 	// check if path exists
 	_, pathErr := os.Stat(path)
 	if os.IsNotExist(pathErr) {
-		log.Fatal("The path doesn't exist")
+		return errors.New("The path doesn't exist")
 	}
 
 	if len(tables) == 0 || (tables[0] == "all" && len(tables) == 1) {
@@ -61,16 +66,16 @@ func Export(fileFormat string, path string, fileName string, tables ...string) {
 	for _, table := range tables {
 		ok, err := db.DB.CheckTableExists(table)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		if !ok {
-			log.Fatal("The table doesn't exist")
+			return errors.New("The table doesn't exist")
 		}
 
 		// create an instance of the file format
 		data, err := db.DB.Query(table, []string{}, map[string]any{})
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		var cats []category.Category
 		var proj []projects.Project
@@ -79,7 +84,7 @@ func Export(fileFormat string, path string, fileName string, tables ...string) {
 		for _, d := range data {
 			mapData, err := json.Marshal(d)
 			if err != nil {
-				log.Fatal(err)
+				return err
 			}
 			if table == "categories" {
 				var c category.Category
@@ -101,16 +106,16 @@ func Export(fileFormat string, path string, fileName string, tables ...string) {
 
 	file, fileErr := os.Create(fmt.Sprintf("%s/%s.%s", path, fileName, fileFormat))
 	if fileErr != nil {
-		log.Fatal(fileErr)
+		return fileErr
 	}
 	defer file.Close()
 
 	jsonData, err := json.MarshalIndent(a, "", "	")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	// write data to a file
 	file.Write(jsonData)
 	// json.Unmarshal()
-
+	return nil
 }
