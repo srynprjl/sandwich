@@ -41,7 +41,7 @@ var importCmd = &cobra.Command{
 		}
 		err := impexp.Import(fileFormat, path)
 		if err != nil {
-			fmt.Println("Error: " + err.Error())
+
 			return
 		}
 	},
@@ -103,7 +103,7 @@ func init() {
 	}
 	exportCmd.Flags().StringP("format", "f", "json", "which format u trynna export the file")
 	exportCmd.Flags().StringP("path", "p", userDir, "where u saving the file")
-	exportCmd.Flags().StringP("fileName", "n", "export", "name of file u trynna export")
+	exportCmd.Flags().StringP("name", "n", "export", "name of file u trynna export")
 	exportCmd.Flags().StringSliceP("tables", "t", []string{"all"}, "which tables you trying to export")
 	rootCmd.AddCommand(importCmd, exportCmd)
 }

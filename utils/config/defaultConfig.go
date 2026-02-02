@@ -35,7 +35,7 @@ var DefaultTables = map[string]Table{
 			PrimaryKey:    "id",
 			AutoIncrement: []string{"id"},
 			Unique:        []string{"uuid", "shorthand"},
-			ForeignKey:    []ForeignKey{{Field: "category", To: Reference{Table: "categories", Field: "id"}}},
+			ForeignKey:    []ForeignKey{{Field: "category", To: Reference{Table: "categories", Field: "id"}, OnDelete: "SET NULL"}},
 			Default:       []map[string]any{{"category": 0}},
 		},
 	},

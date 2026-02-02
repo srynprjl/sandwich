@@ -1,9 +1,9 @@
 package category
 
 type Category struct {
-	Id          int    `json:"id"`
-	Uuid        string `json:"uuid"`
-	Title       string `json:"name"`
-	Shorthand   string `json:"shorthand"`
-	Description string `json:"description"`
+	Id          int    `json:"id" yaml:"id"`
+	Uuid        string `json:"uuid" yaml:"uuid"`
+	Title       string `json:"name" yaml:"name"`
+	Shorthand   string `json:"shorthand" yaml:"shorthand"`
+	Description string `json:"description" yaml:"description"`
 }

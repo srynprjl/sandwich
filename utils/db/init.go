@@ -37,7 +37,6 @@ func (d *Database) Connect() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 		dbErr := d.CreateInitialTables()
 		if dbErr != nil {
 			log.Fatal(dbErr)

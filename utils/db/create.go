@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/srynprjl/sandwich/utils/config"
 )
 
@@ -27,7 +26,5 @@ func (db *Database) CreateInitialTables() error {
 			return err
 		}
 	}
-	// return nil
-	uid := uuid.New()
-	return execute(&DB, fmt.Sprintf("INSERT INTO categories(id, uuid, name, shorthand, description) VALUES(0, '%s','Miscellaneous', 'misc', 'An useless misc category')", uid.String()))
+	return nil
 }

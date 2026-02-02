@@ -17,6 +17,7 @@ func (c *Category) Add(data map[string]any) map[string]any {
 }
 
 func (c *Category) Delete() map[string]any {
+
 	exists, existErr := c.DoesExists()
 	if existErr != nil {
 		return map[string]any{"message": existErr.Error(), "status": "400"}
