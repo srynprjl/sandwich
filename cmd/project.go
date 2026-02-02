@@ -21,32 +21,40 @@ var projectCmd = &cobra.Command{
 	Use:   "project",
 	Short: "Manage your projects with ease",
 	Run: func(cmd *cobra.Command, args []string) {
-		fav, favErr := cmd.Flags().GetBool("favorite")
-		comp, comErr := cmd.Flags().GetBool("completed")
-		progress, progressErr := cmd.Flags().GetBool("progress")
 		projectMap := make(map[string]any)
-		if favErr != nil {
-			fmt.Printf("Error: %s", favErr.Error())
-		}
-		if comErr != nil {
-			fmt.Printf("Error: %s", comErr.Error())
-		}
-		if progressErr != nil {
-			fmt.Printf("Error: %s", progressErr.Error())
-		}
-		if !fav && !comp && !progress {
+		cmd.Flags().VisitAll(func(f *pflag.Flag) {
+			if f.Changed {
+				projectMap[f.Name] = f.Value
+			}
+		})
+		// fmt.Println(projectMap)
+
+		// if favErr != nil {
+		// 	fmt.Printf("Error: %s", favErr.Error())
+		// }
+		// if comErr != nil {
+		// 	fmt.Printf("Error: %s", comErr.Error())
+		// }
+		// if progressErr != nil {
+		// 	fmt.Printf("Error: %s", progressErr.Error())
+		// }
+		// if !fav && !comp && !progress {
+		// 	cmd.Help()
+		// 	return
+		// }
+		if len(projectMap) == 0 {
 			cmd.Help()
 			return
 		}
-		projectMap["favorite"] = fav
-		projectMap["released"] = comp
-		projectMap["progress"] = comp
+		// projectMap["favorite"] = fav
+		// projectMap["released"] = comp
+		// projectMap["progress"] = progress
 		res := projects.GetProjectWhere(projectMap)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s", res["message"])
 			os.Exit(1)
 		}
-		// fmt.Println(res["data"])
+		fmt.Println(res["data"])
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintln(w, "ID\tUID\tName\tInProgress\tReleased\tFavourite\tDescription")
 		for _, data := range res["data"].([]map[string]any) {
@@ -221,7 +229,7 @@ func init() {
 	rootCmd.AddCommand(projectCmd)
 	projectCmd.AddCommand(projectAddCmd, projectDeleteCmd, projectEditCmd, projectUpdateCmd, projectViewCmd, projectListAllCmd)
 	projectCmd.Flags().BoolP("favorite", "f", false, "List all favorite projects")
-	projectCmd.Flags().BoolP("completed", "c", false, "List all completed projects")
+	projectCmd.Flags().BoolP("released", "r", false, "List all completed projects")
 	projectCmd.Flags().BoolP("progress", "p", false, "List all projects that are in progress")
 	fields := config.DefaultTables["projects"].Columns[2:]
 	for _, data := range fields {
