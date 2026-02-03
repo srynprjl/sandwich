@@ -13,6 +13,19 @@ import (
 	"github.com/srynprjl/sandwich/utils/db"
 )
 
+func getCategoryForCondition(args []string) (c category.Category) {
+	var id any
+	// var c category.Category
+	if data, err := strconv.Atoi(args[0]); err == nil {
+		id = data
+		c = category.Category{Id: id.(int)}
+	} else {
+		id = args[0]
+		c = category.Category{Shorthand: id.(string)}
+	}
+	return c
+}
+
 var categoryCmd = &cobra.Command{
 	Use:   "category",
 	Short: "Manage your categories",
@@ -39,15 +52,11 @@ var addCmd = &cobra.Command{
 }
 
 var deleteCmd = &cobra.Command{
-	Use:   "delete [id]",
+	Use:   "delete [id | uid]",
 	Short: "Delete a category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("Error:", err.Error())
-		}
-		c := category.Category{Id: id}
+		c := getCategoryForCondition(args)
 		res := c.Delete()
 		if res["status"] != "200" {
 			fmt.Println("Failed: " + res["message"].(string))
@@ -58,21 +67,17 @@ var deleteCmd = &cobra.Command{
 }
 
 var updateCmd = &cobra.Command{
-	Use:   "update [id]",
+	Use:   "update [id | uid]",
 	Short: "Update a category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("Error:", err.Error())
-		}
+		c := getCategoryForCondition(args)
 		updateData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			if f.Changed {
 				updateData[f.Name] = f.Value
 			}
 		})
-		c := category.Category{Id: id}
 		res := c.Update(updateData)
 		if res["status"] != "200" {
 			fmt.Println("Failed: " + res["message"].(string))

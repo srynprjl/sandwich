@@ -14,7 +14,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
 			version = "1.0.0a.01"
-			date    = "02/02/2026"
+			date    = "03/02/2026"
 		)
 		if v, _ := cmd.Flags().GetBool("version"); v {
 			fmt.Printf("sandwich %v\nCopyright (C) 2026 sysnefo.\nBuilt on: %s", version, date)

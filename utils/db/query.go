@@ -33,8 +33,8 @@ func (d *Database) QueryRandom(tableName string, fields []string, condition map[
 	return d.Query(tableName, fields, condition, "ORDER BY RANDOM()", fmt.Sprintf("LIMIT %d", num))
 }
 
-func (d *Database) CheckExists(tableName string, data map[string]any) (bool, error) {
-	dat, err := d.QueryLimit(tableName, []string{"1"}, data, 1)
+func (d *Database) CheckExists(tableName string, condition map[string]any) (bool, error) {
+	dat, err := d.QueryLimit(tableName, []string{"1"}, condition, 1)
 	if err != nil {
 		return false, err
 	}
