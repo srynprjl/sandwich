@@ -2,7 +2,6 @@ package projects
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/utils/config"
@@ -10,8 +9,8 @@ import (
 )
 
 func (p *Project) Exists() (bool, error) {
-	if p.Id <= 0 {
-		return false, errors.New("Id should be  given.")
+	if p.Id == 0 {
+		p.Id = int(p.GetField([]string{"id"})["data"].(map[string]any)["id"].(int64))
 	}
 	if p.Category == 0 {
 		d := p.GetField([]string{"category"})["data"].(map[string]any)
@@ -45,8 +44,11 @@ func (p *Project) Add(insertData map[string]any) map[string]any {
 
 func (p *Project) Remove() map[string]any {
 	if p.Category == 0 {
-		d := p.GetField([]string{"category"})["data"].(map[string]any)
-		p.Category = int(d["category"].(int64))
+		d := p.GetField([]string{"category"})
+		if d["status"] == 400 {
+			return map[string]any{"message": "No project found in that category", "status": "400"}
+		}
+		p.Category = int(d["data"].(map[string]any)["category"].(int64))
 	}
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
@@ -76,8 +78,11 @@ func schemaUpdate(values map[string]any) map[string]any {
 
 func (p *Project) Update(updateData map[string]any) map[string]any {
 	if p.Category == 0 {
-		d := p.GetField([]string{"category"})["data"].(map[string]any)
-		p.Category = int(d["category"].(int64))
+		d := p.GetField([]string{"category"})
+		if d["status"] == 400 {
+			return map[string]any{"message": "No project found in that category", "status": "400"}
+		}
+		p.Category = int(d["data"].(map[string]any)["category"].(int64))
 	}
 	if exists, err := p.Exists(); !exists {
 		if err != nil {
@@ -131,7 +136,17 @@ func GetNRandom(n int) map[string]any {
 }
 
 func (p *Project) GetField(field []string) map[string]any {
-	data, err := db.DB.Query("projects", field, map[string]any{"id": p.Id})
+	conditions := make(map[string]any)
+	if p.Id != 0 {
+		conditions["id"] = p.Id
+	}
+	if p.ProjectId != "" {
+		conditions["shorthand"] = p.ProjectId
+	}
+	data, err := db.DB.Query("projects", field, conditions)
+	if len(data) <= 0 {
+		return map[string]any{"message": "No data found", "data": map[string]any{}, "status": 400}
+	}
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": "500", "data": map[string]any{}}
 	}

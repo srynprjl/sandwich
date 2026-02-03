@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
@@ -12,19 +11,6 @@ import (
 	"github.com/srynprjl/sandwich/utils/config"
 	"github.com/srynprjl/sandwich/utils/db"
 )
-
-func getCategoryForCondition(args []string) (c category.Category) {
-	var id any
-	// var c category.Category
-	if data, err := strconv.Atoi(args[0]); err == nil {
-		id = data
-		c = category.Category{Id: id.(int)}
-	} else {
-		id = args[0]
-		c = category.Category{Shorthand: id.(string)}
-	}
-	return c
-}
 
 var categoryCmd = &cobra.Command{
 	Use:   "category",

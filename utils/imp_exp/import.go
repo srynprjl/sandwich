@@ -14,8 +14,6 @@ import (
 )
 
 func Import(fileFormat string, file string) error {
-	// check fileFormat
-	// check if fileExists
 
 	_, err := os.Stat(file)
 	if os.IsNotExist(err) {

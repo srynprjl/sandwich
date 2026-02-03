@@ -65,20 +65,23 @@ var projectCmd = &cobra.Command{
 }
 
 var projectAddCmd = &cobra.Command{
-	Use:   "add [categoryId]",
+	Use:   "add [categoryId | categoryUID]",
 	Short: "Add a project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		catId, catErr := strconv.Atoi(args[0])
-		if catErr != nil {
-			fmt.Println("Error: couldn't convert id to integer")
-			os.Exit(1)
+		c := getCategoryForCondition(args)
+		var data map[string]any
+		category := c.Id
+		if category == 0 {
+			data = c.GetField([]string{"id"})
+			category = int(data["data"].(map[string]any)["id"].(int64))
 		}
-		p := projects.Project{Category: catId}
+		p := projects.Project{Category: category}
 		newData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			newData[f.Name] = f.Value
 		})
+		newData["category"] = category
 		res := p.Add(newData)
 		if res["status"] != "201" {
 			fmt.Printf("Error: %s", res["message"])
@@ -89,17 +92,11 @@ var projectAddCmd = &cobra.Command{
 }
 
 var projectDeleteCmd = &cobra.Command{
-	Use:   "delete [categoryId] [id]",
+	Use:   "delete [id | uid]",
 	Short: "Delete the project",
-	Args:  cobra.MinimumNArgs(2),
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := strconv.Atoi(args[1])
-		catId, catErr := strconv.Atoi(args[0])
-		if err != nil || catErr != nil {
-			fmt.Println("Error: couldn't convert id to integer")
-			os.Exit(1)
-		}
-		p := projects.Project{Id: id, Category: catId}
+		p := getProjectsForCondition(args)
 		res := p.Remove()
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
@@ -110,16 +107,10 @@ var projectDeleteCmd = &cobra.Command{
 }
 
 var projectUpdateCmd = &cobra.Command{
-	Use:   "update [categoryId] [id]",
+	Use:   "update [id | uid]",
 	Short: "Update the information about the project",
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := strconv.Atoi(args[1])
-		catId, catErr := strconv.Atoi(args[0])
-		if err != nil || catErr != nil {
-			fmt.Println("Error: couldn't convert id to integer")
-			os.Exit(1)
-		}
-		p := projects.Project{Id: id, Category: catId}
+		p := getProjectsForCondition(args)
 		newData := make(map[string]any)
 		cmd.Flags().Visit(func(f *pflag.Flag) {
 			if f.Changed {
@@ -136,16 +127,16 @@ var projectUpdateCmd = &cobra.Command{
 }
 
 var projectViewCmd = &cobra.Command{
-	Use:   "view [categoryId] [id]",
+	Use:   "view [id | uid]",
 	Short: "View information about the project",
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		id, err := strconv.Atoi(args[1])
-		catId, catErr := strconv.Atoi(args[0])
-		if err != nil || catErr != nil {
-			fmt.Println("Error: couldn't convert id to integer")
-			os.Exit(1)
-		}
-		p := projects.Project{Id: id, Category: catId}
+		// catId, catErr := strconv.Atoi(args[1])
+		// if catErr != nil {
+		// 	fmt.Println("Error: couldn't convert id to integer")
+		// 	os.Exit(1)
+		// }
+		p := getProjectsForCondition(args)
 		res := p.Get()
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
@@ -168,7 +159,7 @@ var projectViewCmd = &cobra.Command{
 }
 
 var projectListAllCmd = &cobra.Command{
-	Use:   "list [category]",
+	Use:   "list [categoryId | UID]",
 	Short: "List all the project in the category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {

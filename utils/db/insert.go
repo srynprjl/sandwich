@@ -38,6 +38,7 @@ func (d *Database) InsertOne(tableName string, values map[string]any) error {
 	}
 
 	query := fmt.Sprintf("INSERT OR IGNORE into %s(%s) VALUES(%s);", tableName, strings.Join(fields, ","), strings.Join(insertValues, ","))
+	// fmt.Println(query, insertQuery)
 	err := execute(d, query, insertQuery...)
 	if err != nil {
 		return err
