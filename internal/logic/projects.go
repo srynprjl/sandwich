@@ -1,9 +1,8 @@
-package projects
+package logic
 
 import (
 	"database/sql"
 
-	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/utils/config"
 	"github.com/srynprjl/sandwich/utils/db"
 )
@@ -28,7 +27,7 @@ func (p *Project) Exists() (bool, error) {
 }
 
 func (p *Project) Add(insertData map[string]any) map[string]any {
-	c := category.Category{Id: p.Category}
+	c := Category{Id: p.Category}
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
 			return map[string]any{"message": err.Error(), "status": "500"}
@@ -153,12 +152,15 @@ func (p *Project) GetField(field []string) map[string]any {
 	return map[string]any{"message": "Fetched.", "data": data[0], "status": "200"}
 }
 
-func GetProjects(c category.Category) map[string]any {
+func GetProjects(c Category) map[string]any {
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
 			return map[string]any{"message": err.Error(), "status": "500"}
 		}
 		return map[string]any{"message": "No categories found", "status": "500"}
+	}
+	if c.Id == 0 {
+		c.Id = int(c.GetField([]string{"id"})["data"].(map[string]any)["id"].(int64))
 	}
 	data, err := db.DB.Query("projects", []string{}, map[string]any{"category": c.Id})
 	if err != nil {

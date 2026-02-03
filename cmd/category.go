@@ -7,7 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/internal/logic"
 	"github.com/srynprjl/sandwich/utils/config"
 	"github.com/srynprjl/sandwich/utils/db"
 )
@@ -27,7 +27,7 @@ var addCmd = &cobra.Command{
 				data[f.Name] = f.Value
 			}
 		})
-		var c category.Category
+		var c logic.Category
 		res := c.Add(data)
 		if res["status"] == "201" {
 			fmt.Println("Success: " + res["message"].(string))
@@ -77,7 +77,7 @@ var viewCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all categories",
 	Run: func(cmd *cobra.Command, args []string) {
-		res := category.GetAll()
+		res := logic.GetAll()
 		if res["status"] != "200" {
 			fmt.Println("Failed: " + res["message"].(string))
 			return

@@ -1,4 +1,4 @@
-package projects
+package logic
 
 type Project struct {
 	Id          int    `json:"id" yaml:"id"`
@@ -13,4 +13,12 @@ type Project struct {
 	Github      string `json:"github" yaml:"github"`
 	URL         string `json:"url" yaml:"url"`
 	Category    int    `json:"category" yaml:"category"`
+}
+
+type Category struct {
+	Id          int    `json:"id" yaml:"id"`
+	Uuid        string `json:"uuid" yaml:"uuid"`
+	Title       string `json:"name" yaml:"name"`
+	Shorthand   string `json:"shorthand" yaml:"shorthand"`
+	Description string `json:"description" yaml:"description"`
 }

@@ -11,8 +11,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/sandwich/internal/logic"
 	"github.com/srynprjl/sandwich/utils/config"
 	"github.com/srynprjl/sandwich/utils/db"
 )
@@ -49,7 +48,7 @@ var projectCmd = &cobra.Command{
 		// projectMap["favorite"] = fav
 		// projectMap["released"] = comp
 		// projectMap["progress"] = progress
-		res := projects.GetProjectWhere(projectMap)
+		res := logic.GetProjectWhere(projectMap)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s", res["message"])
 			os.Exit(1)
@@ -76,7 +75,7 @@ var projectAddCmd = &cobra.Command{
 			data = c.GetField([]string{"id"})
 			category = int(data["data"].(map[string]any)["id"].(int64))
 		}
-		p := projects.Project{Category: category}
+		p := logic.Project{Category: category}
 		newData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			newData[f.Name] = f.Value
@@ -131,11 +130,6 @@ var projectViewCmd = &cobra.Command{
 	Short: "View information about the project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// catId, catErr := strconv.Atoi(args[1])
-		// if catErr != nil {
-		// 	fmt.Println("Error: couldn't convert id to integer")
-		// 	os.Exit(1)
-		// }
 		p := getProjectsForCondition(args)
 		res := p.Get()
 		if res["status"] != "200" {
@@ -144,10 +138,10 @@ var projectViewCmd = &cobra.Command{
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintln(w, "Column\tValue")
-		var project projects.Project
+		var project logic.Project
 		byteData, _ := json.Marshal(res["data"].(map[string]any))
 		json.Unmarshal(byteData, &project)
-		t := reflect.TypeFor[projects.Project]()
+		t := reflect.TypeFor[logic.Project]()
 		v := reflect.ValueOf(project)
 		for i := range t.NumField() {
 			fieldType := t.Field(i)
@@ -163,12 +157,8 @@ var projectListAllCmd = &cobra.Command{
 	Short: "List all the project in the category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		categoryId, err := strconv.Atoi(args[0])
-		if err != nil {
-			fmt.Println("Error: couldn't convert id to integer")
-			os.Exit(1)
-		}
-		res := projects.GetProjects(category.Category{Id: categoryId})
+		c := getCategoryForCondition(args)
+		res := logic.GetProjects(c)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
 			os.Exit(1)
@@ -192,7 +182,7 @@ var projectEditCmd = &cobra.Command{
 			fmt.Println("Error: couldn't convert id to integer")
 			os.Exit(1)
 		}
-		p := projects.Project{Id: id}
+		p := logic.Project{Id: id}
 		res := p.GetField([]string{"path"})
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])

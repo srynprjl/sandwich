@@ -22,6 +22,7 @@ func (d *Database) Query(tableName string, fields []string, condition map[string
 	if len(extras) != 0 {
 		sqlStatement = fmt.Sprintf("%s %s", sqlStatement, strings.Join(extras, " "))
 	}
+	fmt.Println(sqlStatement)
 	return query(d, sqlStatement, values...)
 }
 

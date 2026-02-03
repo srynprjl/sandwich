@@ -1,4 +1,4 @@
-package category
+package logic
 
 import (
 	"github.com/srynprjl/sandwich/utils/db"

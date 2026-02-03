@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/sandwich/internal/logic"
 )
 
 func ProjectGet(w http.ResponseWriter, r *http.Request) {
@@ -17,7 +17,7 @@ func ProjectGet(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "ERROR")
 		return
 	}
-	project := projects.Project{Id: id, Category: catId}
+	project := logic.Project{Id: id, Category: catId}
 	resp := project.Get()
 	if resp["status"] != "200" {
 		fmt.Fprintln(w, resp["message"].(string))
@@ -28,7 +28,7 @@ func ProjectGet(w http.ResponseWriter, r *http.Request) {
 
 func ProjectGetRandom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	resp := projects.GetRandom()
+	resp := logic.GetRandom()
 	if resp["status"] != "200" {
 		fmt.Fprintln(w, resp["message"].(string))
 		return
@@ -43,7 +43,7 @@ func ProjectGetNRandom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	resp := projects.GetNRandom(n)
+	resp := logic.GetNRandom(n)
 	if resp["status"] != "200" {
 		fmt.Fprintln(w, resp["message"].(string))
 		return
@@ -57,7 +57,7 @@ func ProjectAdd(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Error: "+err.Error())
 		return
 	}
-	p := projects.Project{Category: catId}
+	p := logic.Project{Category: catId}
 	data := make(map[string]any)
 	json.NewDecoder(r.Body).Decode(&data)
 	data["category"] = p.Category
@@ -73,7 +73,7 @@ func ProjectDelete(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Error: "+err.Error())
 		return
 	}
-	p := projects.Project{Id: id, Category: catId}
+	p := logic.Project{Id: id, Category: catId}
 	resp := p.Remove()
 	fmt.Fprintln(w, resp["message"].(string))
 }
@@ -85,7 +85,7 @@ func ProjectUpdate(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Error")
 		return
 	}
-	p := projects.Project{Id: id, Category: catId}
+	p := logic.Project{Id: id, Category: catId}
 	var data map[string]any
 	jsonErr := json.NewDecoder(r.Body).Decode(&data)
 	if jsonErr != nil {
