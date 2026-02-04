@@ -2,20 +2,18 @@ package init
 
 import (
 	"fmt"
-	"os"
 	"strconv"
+	"strings"
 
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/internal/config"
 	"github.com/srynprjl/sandwich/internal/projects"
 )
 
-func Init(lang string, p *projects.Project) {
+func Init(lang string, p projects.Project) {
 	fmt.Println("Support for " + lang + " is avalaible")
-	fmt.Println(p)
 	exists, _ := p.Exists()
-
-	// if project doesnt exist create a project with that id
+	// fmt.Println(exists)
 	if !exists {
 		fmt.Println("Project not found! creating a new Project.")
 		var name, shorthand, cats string
@@ -42,7 +40,7 @@ func Init(lang string, p *projects.Project) {
 		cat := c.Id
 		if cat == 0 {
 			data = c.GetField([]string{"id"})
-			if data["status"] != "200" {
+			if data["status"] != 200 {
 				fmt.Println(data["message"])
 				return
 			}
@@ -57,23 +55,38 @@ func Init(lang string, p *projects.Project) {
 			fmt.Println("Created")
 		}
 	}
-	// create folder with checks
+	// get project data
 	res := p.Get()
 	if res["status"] != "200" {
 		fmt.Println(res["message"])
 		return
 	}
+	// update path with checks
 	project_data := res["data"].(map[string]any)
-	if project_data["path"] == config.Conf.ProjectLocation || project_data["path"] == "" {
-		os.MkdirAll(config.Conf.ProjectLocation+project_data["name"].(string), 0700)
-		project_data["path"] = config.Conf.ProjectLocation + project_data["name"].(string)
-		// update db tables
-		p.Update(map[string]any{"path": project_data["path"]})
+	path := project_data["path"].(string)
+	if !strings.HasSuffix(path, "/") {
+		path = path + "/"
+		p.Update(map[string]any{"path": path})
 	}
-	
+
+	if path == config.Conf.ProjectLocation || path == "" {
+		path = config.Conf.ProjectLocation + project_data["name"].(string) + "/"
+		// update db tables
+		p.Update(map[string]any{"path": path})
+	}
+	project_data["path"] = path
 	// call functions based on lang
 	switch lang {
-	case "test":
+	case "go", "golang":
+		fmt.Println(project_data)
+		InitGo(project_data)
+	case "js", "javascript":
+	// code here
+	case "java":
+	// code here
+	case "kotlin", "kt":
+	// code here
+	case "python", "py":
 		// code here
 	}
 }

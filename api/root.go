@@ -7,7 +7,6 @@ import (
 
 func Api(host string, port int) {
 	mux := http.NewServeMux()
-	fmt.Println(host, port)
 	mux.HandleFunc("GET /api/category", CategoryGetAll)
 	mux.HandleFunc("POST /api/category", CategoryAdd)
 	mux.HandleFunc("PATCH /api/category/{id}", CategoryUpdate)

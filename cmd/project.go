@@ -212,7 +212,6 @@ var projectInitCommand = &cobra.Command{
 	Short: "Initialize a project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("COMING SOON")
 		p := GetProjectsForCondition(args)
 		var argsCorrect bool = false
 		str, _ := cmd.Flags().GetString("lang")
@@ -230,7 +229,7 @@ var projectInitCommand = &cobra.Command{
 			fmt.Println("No support for the language.")
 			return
 		}
-		s.Init(str, &p)
+		s.Init(str, p)
 	},
 }
 
