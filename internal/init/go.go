@@ -48,7 +48,7 @@ func InitGo(project_data map[string]any) {
 				print("This project was created using Sandwich")
 			}
 			`)
-	file.Close()
+	fil.Close()
 	// Initialize a git repository
 
 }
