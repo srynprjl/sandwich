@@ -6,34 +6,34 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/internal/projects"
 )
 
 func ProjectGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	id, err := strconv.Atoi(r.PathValue("id"))
-	catId, catErr := strconv.Atoi(r.PathValue("catId"))
-	if err != nil || catErr != nil {
-		fmt.Fprintf(w, "ERROR")
-		return
+	id := r.PathValue("id")
+	catUUID := r.PathValue("catId")
+	c := category.Category{Uuid: catUUID}
+	d, res := c.GetField([]string{"id"})
+	if res.Error != nil {
+		json.NewEncoder(w).Encode(res.WebResponse())
 	}
-	project := projects.Project{Id: id, Category: catId}
-	resp := project.Get()
-	if resp["status"] != "200" {
-		fmt.Fprintln(w, resp["message"].(string))
-		return
-	}
-	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
+	catId := int(d["id"].(int64))
+
+	project := projects.Project{Uuid: id, Category: catId}
+	data, resp := project.Get()
+	response := resp.WebResponse()
+	response["data"] = data
+	json.NewEncoder(w).Encode(response)
 }
 
 func ProjectGetRandom(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	resp := projects.GetRandom()
-	if resp["status"] != "200" {
-		fmt.Fprintln(w, resp["message"].(string))
-		return
-	}
-	json.NewEncoder(w).Encode(resp["data"].(map[string]any))
+	data, resp := projects.GetRandom(1)
+	response := resp.WebResponse()
+	response["data"] = data
+	json.NewEncoder(w).Encode(response)
 }
 
 func ProjectGetNRandom(w http.ResponseWriter, r *http.Request) {
@@ -43,54 +43,65 @@ func ProjectGetNRandom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	resp := projects.GetNRandom(n)
-	if resp["status"] != "200" {
-		fmt.Fprintln(w, resp["message"].(string))
-		return
-	}
-	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
+	data, resp := projects.GetRandom(n)
+	response := resp.WebResponse()
+	response["data"] = data
+	json.NewEncoder(w).Encode(response)
 }
 
 func ProjectAdd(w http.ResponseWriter, r *http.Request) {
-	catId, err := strconv.Atoi(r.PathValue("catId"))
-	if err != nil {
-		fmt.Fprintln(w, "Error: "+err.Error())
-		return
+	catUUID := r.PathValue("catId")
+	c := category.Category{Uuid: catUUID}
+	d, res := c.GetField([]string{"id"})
+	if res.Error != nil {
+		json.NewEncoder(w).Encode(res.WebResponse())
 	}
+	catId := int(d["id"].(int64))
+
 	p := projects.Project{Category: catId}
 	data := make(map[string]any)
 	json.NewDecoder(r.Body).Decode(&data)
 	data["category"] = p.Category
 	resp := p.Add(data)
-	fmt.Fprintln(w, resp["message"].(string))
+	json.NewEncoder(w).Encode(resp.WebResponse())
 }
 
 func ProjectDelete(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	catId, catErr := strconv.Atoi(r.PathValue("catId"))
+	id := r.PathValue("id")
+	catUUID := r.PathValue("catId")
 
-	if err != nil || catErr != nil {
-		fmt.Fprintln(w, "Error: "+err.Error())
-		return
+	c := category.Category{Uuid: catUUID}
+	d, res := c.GetField([]string{"id"})
+	if res.Error != nil {
+		json.NewEncoder(w).Encode(res.WebResponse())
 	}
-	p := projects.Project{Id: id, Category: catId}
+	catId := int(d["id"].(int64))
+
+	p := projects.Project{Uuid: id, Category: catId}
 	resp := p.Remove()
-	fmt.Fprintln(w, resp["message"].(string))
+	json.NewEncoder(w).Encode(resp.WebResponse())
 }
 
 func ProjectUpdate(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(r.PathValue("id"))
-	catId, catErr := strconv.Atoi(r.PathValue("catId"))
-	if err != nil || catErr != nil {
-		fmt.Fprintln(w, "Error")
-		return
+	id := r.PathValue("id")
+	catUUID := r.PathValue("catId")
+
+	c := category.Category{Uuid: catUUID}
+	d, res := c.GetField([]string{"id"})
+	if res.Error != nil {
+		json.NewEncoder(w).Encode(res.WebResponse())
 	}
-	p := projects.Project{Id: id, Category: catId}
+	catId := int(d["id"].(int64))
+
+	p := projects.Project{Uuid: id, Category: catId}
+
 	var data map[string]any
+
 	jsonErr := json.NewDecoder(r.Body).Decode(&data)
 	if jsonErr != nil {
 		fmt.Fprintln(w, "Error!")
 	}
+
 	resp := p.Update(data)
-	fmt.Fprintln(w, resp["message"])
+	json.NewEncoder(w).Encode(resp.WebResponse())
 }

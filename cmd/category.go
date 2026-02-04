@@ -30,11 +30,12 @@ var addCmd = &cobra.Command{
 		})
 		var c category.Category
 		res := c.Add(data)
-		if res["status"] == "201" {
-			fmt.Println("Success: " + res["message"].(string))
+		if res.Error != nil {
+			fmt.Println("Failed: " + res.Message)
 			return
 		}
-		fmt.Println("Failed: " + res["message"].(string))
+		fmt.Println("Success: " + res.Message)
+
 	},
 }
 var deleteCmd = &cobra.Command{
@@ -45,11 +46,11 @@ var deleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		c := category.Category{Shorthand: args[0]}
 		res := c.Delete()
-		if res["status"] != "200" {
-			fmt.Println("Failed: " + res["message"].(string))
+		if res.Error != nil {
+			fmt.Println("Failed: " + res.Message)
 			return
 		}
-		fmt.Println("Success: " + res["message"].(string))
+		fmt.Println("Success: " + res.Message)
 	},
 }
 
@@ -67,11 +68,11 @@ var updateCmd = &cobra.Command{
 			}
 		})
 		res := c.Update(updateData)
-		if res["status"] != "200" {
-			fmt.Println("Failed: " + res["message"].(string))
+		if res.Error != nil {
+			fmt.Println("Failed: " + res.Message)
 			return
 		}
-		fmt.Println("Success: " + res["message"].(string))
+		fmt.Println("Success: " + res.Message)
 	},
 }
 
@@ -80,14 +81,14 @@ var viewCmd = &cobra.Command{
 	Aliases: []string{"trace"},
 	Short:   "List all categories",
 	Run: func(cmd *cobra.Command, args []string) {
-		res := category.GetAll()
-		if res["status"] != "200" {
-			fmt.Println("Failed: " + res["message"].(string))
+		data, res := category.GetAll()
+		if res.Error != nil {
+			fmt.Println("Failed: " + res.Message)
 			return
 		}
 		t := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintf(t, "Index\tUID\tName\tDescription\n")
-		for i, data := range res["data"].([]map[string]any) {
+		for i, data := range data {
 			fmt.Fprintf(t, "%v\t%v\t%v\t%v\n", i+1, data["shorthand"], data["name"], data["description"])
 		}
 		t.Flush()

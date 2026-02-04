@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/internal/projects"
@@ -12,13 +11,10 @@ import (
 
 func CategoryGetAll(r http.ResponseWriter, w *http.Request) {
 	r.Header().Set("Content-Type", "application/json")
-	resp := category.GetAll()
-	if resp["status"] == "200" {
-		data := resp["data"].([]map[string]any)
-		json.NewEncoder(r).Encode(data)
-	} else {
-		fmt.Fprintln(r, resp["message"].(string))
-	}
+	data, resp := category.GetAll()
+	response := resp.WebResponse()
+	response["data"] = data
+	json.NewEncoder(r).Encode(response)
 }
 
 func CategoryAdd(r http.ResponseWriter, w *http.Request) {
@@ -26,54 +22,35 @@ func CategoryAdd(r http.ResponseWriter, w *http.Request) {
 	var data = make(map[string]any)
 	json.NewDecoder(w.Body).Decode(&data)
 	resp := c.Add(data)
-	if resp["status"] == "201" {
-		fmt.Fprintln(r, resp["message"])
-	} else {
-		fmt.Fprintln(r, resp["message"])
-	}
+	json.NewEncoder(r).Encode(resp.WebResponse())
 }
 
 func CategoryDelete(r http.ResponseWriter, w *http.Request) {
-	id, err := strconv.Atoi(w.PathValue("id"))
-	if err != nil {
-		fmt.Fprint(r, err.Error())
-	}
-	c := category.Category{Id: id}
+	c := category.Category{Uuid: w.PathValue("id")}
 	resp := c.Delete()
-	if resp["status"] != "200" {
-		fmt.Fprint(r, resp["message"])
-		return
-	}
-	fmt.Fprint(r, "Deleted")
-
+	json.NewEncoder(r).Encode(resp.WebResponse())
 }
 
 func CategoryUpdate(r http.ResponseWriter, w *http.Request) {
-	id, err := strconv.Atoi(w.PathValue("id"))
-	if err != nil {
-		fmt.Printf("Error!")
-		return
-	}
-	c := category.Category{Id: id}
+	id := w.PathValue("id")
+	c := category.Category{Uuid: id}
 	updateData := make(map[string]any)
 	json.NewDecoder(w.Body).Decode(&updateData)
 	resp := c.Update(updateData)
-	fmt.Fprint(r, resp["message"])
+	json.NewEncoder(r).Encode(resp.WebResponse())
 
 }
 
-func CategoryGetAllProjects(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	id, err := strconv.Atoi(r.PathValue("id"))
-	if err != nil {
-		fmt.Fprintf(w, "Error")
+func CategoryGetAllProjects(r http.ResponseWriter, w *http.Request) {
+	r.Header().Set("Content-Type", "application/json")
+	id := w.PathValue("id")
+	c := category.Category{Uuid: id}
+	data, res := projects.GetProjects(c)
+	if res.Status != 200 {
+		fmt.Printf("Error: %s\n", res.Message)
 		return
 	}
-	c := category.Category{Id: id}
-	resp := projects.GetProjects(c)
-	if resp["status"] != "200" {
-		fmt.Fprintln(w, resp["message"])
-		return
-	}
-	json.NewEncoder(w).Encode(resp["data"].([]map[string]any))
+	response := res.WebResponse()
+	response["data"] = data
+	json.NewEncoder(r).Encode(response)
 }

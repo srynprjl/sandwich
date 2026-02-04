@@ -31,15 +31,14 @@ var projectCmd = &cobra.Command{
 			cmd.Help()
 			return
 		}
-		res := projects.GetProjectWhere(projectMap)
-		if res["status"] != "200" {
-			fmt.Printf("Error: %s", res["message"])
-			os.Exit(1)
+		data, res := projects.GetProjectWhere(projectMap)
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
-		fmt.Println(res["data"])
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintln(w, "Index\tUID\tName\tInProgress\tReleased\tFavourite\tDescription")
-		for i, data := range res["data"].([]map[string]any) {
+		for i, data := range data {
 			fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%t\t%s\n", i+1, data["shorthand"], data["name"], data["progress"], data["released"], data["favorite"], data["description"])
 		}
 		w.Flush()
@@ -53,12 +52,11 @@ var projectAddCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := category.Category{Shorthand: args[0]}
-		var data map[string]any
-		cats := c.Id
-		if cats == 0 {
-			data = c.GetField([]string{"id"})
-			cats = int(data["data"].(map[string]any)["id"].(int64))
+		data, resp := c.GetField([]string{"id"})
+		if resp.Error != nil {
+			fmt.Println("Error: " + resp.Message)
 		}
+		cats := int(data["id"].(int64))
 		p := projects.Project{Category: cats}
 		newData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
@@ -66,11 +64,11 @@ var projectAddCmd = &cobra.Command{
 		})
 		newData["category"] = cats
 		res := p.Add(newData)
-		if res["status"] != "201" {
-			fmt.Printf("Error: %s", res["message"])
-			os.Exit(1)
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
-		fmt.Printf("Success: %s", res["message"])
+		fmt.Printf("Success: %s\n", res.Message)
 	},
 }
 
@@ -82,11 +80,11 @@ var projectDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p := projects.Project{ProjectId: args[0]}
 		res := p.Remove()
-		if res["status"] != "200" {
-			fmt.Printf("Error: %s\n", res["message"])
-			os.Exit(1)
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
-		fmt.Printf("Success: %s\n", res["message"])
+		fmt.Printf("Success: %s\n", res.Message)
 	},
 }
 
@@ -103,11 +101,11 @@ var projectUpdateCmd = &cobra.Command{
 			}
 		})
 		res := p.Update(newData)
-		if res["status"] != "200" {
-			fmt.Printf("Error: %s\n", res["message"])
-			os.Exit(1)
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
-		fmt.Printf("Success: %s\n", res["message"])
+		fmt.Printf("Success: %s\n", res.Message)
 	},
 }
 
@@ -118,15 +116,15 @@ var projectViewCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		p := projects.Project{ProjectId: args[0]}
-		res := p.Get()
-		if res["status"] != "200" {
-			fmt.Printf("Error: %s\n", res["message"])
-			os.Exit(1)
+		data, res := p.Get()
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintln(w, "Column\tValue")
 		var project projects.Project
-		byteData, _ := json.Marshal(res["data"].(map[string]any))
+		byteData, _ := json.Marshal(data)
 		json.Unmarshal(byteData, &project)
 		t := reflect.TypeFor[projects.Project]()
 		v := reflect.ValueOf(project)
@@ -146,14 +144,14 @@ var projectListAllCmd = &cobra.Command{
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := category.Category{Shorthand: args[0]}
-		res := projects.GetProjects(c)
-		if res["status"] != "200" {
-			fmt.Printf("Error: %s\n", res["message"])
-			os.Exit(1)
+		data, res := projects.GetProjects(c)
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
 		fmt.Fprintln(w, "Index\tUID\tName\tInProgress\tReleased\tFavourite\tDescription")
-		for i, data := range res["data"].([]map[string]any) {
+		for i, data := range data {
 			fmt.Fprintf(w, "%d\t%s\t%s\t%t\t%t\t%t\t%s\n", i+1, data["shorthand"], data["name"], data["progress"], data["released"], data["favorite"], data["description"])
 		}
 		w.Flush()
@@ -166,12 +164,12 @@ var projectEditCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		defaultEditor := os.Getenv("EDITOR")
 		p := projects.Project{ProjectId: args[0]}
-		res := p.GetField([]string{"path"})
-		if res["status"] != "200" {
-			fmt.Printf("Error: %s\n", res["message"])
-			os.Exit(1)
+		data, res := p.GetField([]string{"path"})
+		if res.Status != 200 {
+			fmt.Printf("Error: %s\n", res.Message)
+			return
 		}
-		path := res["data"].(map[string]any)["path"].(string)
+		path := data["path"].(string)
 		if defaultEditor == "" {
 			fmt.Println("Error: No default editor set. ")
 			os.Exit(1)

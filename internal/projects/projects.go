@@ -3,28 +3,36 @@ package projects
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/internal/config"
 	"github.com/srynprjl/sandwich/internal/utils/db"
+	"github.com/srynprjl/sandwich/internal/utils/responses"
 )
 
 func (p *Project) Exists() (bool, error) {
-	if p.Id == 0 {
-		d := p.GetField([]string{"id"})["data"].(map[string]any)
-		if len(d) == 0 {
-			return false, errors.New("Doesnt Exist")
+	if p.ProjectId == "" {
+		d, res := p.GetField([]string{"shorthand"})
+		if res.Error != nil {
+			return false, res.Error
 		}
-		p.Id = int(d["id"].(int64))
+		if len(d) == 0 {
+			return false, errors.New("project doesn't exist")
+		}
+		p.ProjectId = d["shorthand"].(string)
 	}
 	if p.Category == 0 {
-		d := p.GetField([]string{"category"})["data"].(map[string]any)
+		d, res := p.GetField([]string{"category"})
+		if res.Error != nil {
+			return false, res.Error
+		}
 		if len(d) == 0 {
-			return false, errors.New("Doesnt Exist")
+			return false, errors.New("project doesn't exist")
 		}
 		p.Category = int(d["category"].(int64))
 	}
-	exists, err := db.DB.CheckExists("projects", map[string]any{"id": p.Id, "category": p.Category})
+	exists, err := db.DB.CheckExists("projects", map[string]any{"shorthand": p.ProjectId, "category": p.Category})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return exists, nil
@@ -35,42 +43,61 @@ func (p *Project) Exists() (bool, error) {
 	return exists, nil
 }
 
-func (p *Project) Add(insertData map[string]any) map[string]any {
+func (p *Project) Add(insertData map[string]any) responses.Response {
 	c := category.Category{Id: p.Category}
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
-			return map[string]any{"message": err.Error(), "status": "500"}
+			return responses.Response{
+				Error:   err,
+				Message: err.Error(),
+				Status:  500,
+			}
 		}
-		return map[string]any{"message": "Category doesn't exists", "status": "400"}
+		return responses.Response{
+			Error:   errors.New("category doesn't exist"),
+			Message: "category doesn't exist",
+			Status:  400,
+		}
 	}
+
 	err := db.DB.InsertOne("projects", insertData)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return responses.Response{
+			Error:   err,
+			Message: err.Error(),
+			Status:  500,
+		}
 	}
-	return map[string]any{"message": "Created.", "status": "201"}
+	return responses.Response{
+		Error:   nil,
+		Message: "project successfully created.",
+		Status:  201,
+	}
 }
 
-func (p *Project) Remove() map[string]any {
-	if p.Category == 0 {
-		d := p.GetField([]string{"category"})
-		if d["status"] == 400 {
-			return map[string]any{"message": "No project found in that category", "status": "400"}
-		}
-		p.Category = int(d["data"].(map[string]any)["category"].(int64))
+func (p *Project) Remove() responses.Response {
+	resp := p.checkIfCategoryExists()
+	if resp.Error != nil {
+		return resp
 	}
-	if exists, err := p.Exists(); !exists {
-		if err != nil {
-			return map[string]any{"message": err.Error(), "status": "500"}
-		}
-		return map[string]any{"message": "No project found in that category", "status": "400"}
-	}
-	deleteConditions := map[string]any{"id": p.Id, "category": p.Category}
+
+	conditions := p.makeConditions()
+	conditions["category"] = p.Category
+	deleteConditions := conditions
 
 	err := db.DB.DeleteItem("projects", deleteConditions)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return responses.Response{
+			Message: err.Error(),
+			Error:   err,
+			Status:  500,
+		}
 	}
-	return map[string]any{"message": "Deleted.", "status": "201"}
+	return responses.Response{
+		Message: "project deleted succesfully",
+		Error:   nil,
+		Status:  200,
+	}
 }
 
 func schemaUpdate(values map[string]any) map[string]any {
@@ -84,110 +111,134 @@ func schemaUpdate(values map[string]any) map[string]any {
 	return newData
 }
 
-func (p *Project) Update(updateData map[string]any) map[string]any {
-	if p.Category == 0 {
-		d := p.GetField([]string{"category"})
-		if d["status"] == 400 {
-			return map[string]any{"message": "No project found in that category", "status": "400"}
-		}
-		p.Category = int(d["data"].(map[string]any)["category"].(int64))
+func (p *Project) Update(updateData map[string]any) responses.Response {
+	resp := p.checkIfCategoryExists()
+	if resp.Error != nil {
+		return resp
 	}
-	if exists, err := p.Exists(); !exists {
-		if err != nil {
-			return map[string]any{"message": "Failed.", "status": "500"}
-		}
-		return map[string]any{"message": "No project found in that category", "status": "400"}
-	}
+
 	validatedData := schemaUpdate(updateData)
 	if len(validatedData) == 0 {
-		return map[string]any{"message": "Nothing to be updated", "status": "200"}
+		return responses.Response{
+			Message: "No field to update",
+			Status:  400,
+			Error:   nil,
+		}
 	}
 	err := db.DB.UpdateItems("projects", validatedData, map[string]any{"id": p.Id})
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return responses.Response{
+			Error:   err,
+			Message: err.Error(),
+			Status:  500,
+		}
 	}
-	return map[string]any{"message": "Updated data", "status": "200"}
+	return responses.Response{
+		Error:   nil,
+		Message: "data updated successfully",
+		Status:  200,
+	}
 }
 
-func (p *Project) Get() map[string]any {
-	if p.Category == 0 {
-		data := p.GetField([]string{"category"})["data"].(map[string]any)
-
-		if len(data) == 0 {
-			return map[string]any{"message": "No project found in that category", "status": "400"}
-		}
-		d := int(data["category"].(int64))
-		p.Category = d
-	}
-	if exists, err := p.Exists(); !exists {
-		if err != nil {
-			return map[string]any{"message": "Failed.", "status": "500"}
-		}
-		return map[string]any{"message": "No project found in that category", "status": "400"}
+func (p *Project) Get() (map[string]any, responses.Response) {
+	resp := p.checkIfCategoryExists()
+	if resp.Error != nil {
+		return map[string]any{}, resp
 	}
 	data, err := db.DB.QueryLimit("projects", []string{}, map[string]any{"id": p.Id, "category": p.Category}, 1)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return map[string]any{}, responses.Response{
+			Message: err.Error(),
+			Status:  500,
+			Error:   err,
+		}
 	}
-	return map[string]any{"message": "Fetched.", "data": data[0], "status": "200"}
+	return data[0], responses.Response{
+		Message: "projects fetched successfully",
+		Status:  200,
+		Error:   nil,
+	}
 }
 
-func GetRandom() map[string]any {
-	data, err := db.DB.QueryRandom("projects", []string{}, map[string]any{}, 1)
-	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
-	}
-	return map[string]any{"message": "Fetched.", "data": data[0], "status": "200"}
-}
-
-func GetNRandom(n int) map[string]any {
+func GetRandom(n int) ([]map[string]any, responses.Response) {
 	data, err := db.DB.QueryRandom("projects", []string{}, map[string]any{}, n)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return []map[string]any{}, responses.Response{
+			Message: err.Error(),
+			Status:  500,
+			Error:   err,
+		}
 	}
-	return map[string]any{"message": "Fetched.", "data": data, "status": "200"}
+	return data, responses.Response{
+		Message: "projects fetched successfully",
+		Status:  200,
+		Error:   nil,
+	}
 }
 
-func (p *Project) GetField(field []string) map[string]any {
-	conditions := make(map[string]any)
-	if p.Id != 0 {
-		conditions["id"] = p.Id
-	}
-	if p.ProjectId != "" {
-		conditions["shorthand"] = p.ProjectId
-	}
+func (p *Project) GetField(field []string) (map[string]any, responses.Response) {
+	conditions := p.makeConditions()
 	data, err := db.DB.Query("projects", field, conditions)
 	if len(data) <= 0 {
-		return map[string]any{"message": "No data found", "data": map[string]any{}, "status": 400}
+		return map[string]any{}, responses.Response{
+			Message: "No data found",
+			Status:  200,
+			Error:   nil,
+		}
 	}
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500", "data": map[string]any{}}
+		return map[string]any{}, responses.Response{
+			Message: err.Error(),
+			Status:  500,
+			Error:   err,
+		}
 	}
-	return map[string]any{"message": "Fetched.", "data": data[0], "status": "200"}
+	return data[0], responses.Response{
+		Message: "project fetched succesfully",
+		Status:  200,
+		Error:   nil,
+	}
 }
 
-func GetProjects(c category.Category) map[string]any {
+func GetProjects(c category.Category) ([]map[string]any, responses.Response) {
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
-			return map[string]any{"message": err.Error(), "status": "500"}
+			return []map[string]any{}, responses.Response{
+				Message: err.Error(),
+				Status:  500,
+				Error:   err,
+			}
 		}
-		return map[string]any{"message": "No categories found", "status": "500"}
+		return []map[string]any{}, responses.Response{
+			Message: "No category found",
+			Status:  500,
+			Error:   errors.New("category not found"),
+		}
 	}
 	if c.Id == 0 {
-		c.Id = int(c.GetField([]string{"id"})["data"].(map[string]any)["id"].(int64))
+		data, resp := c.GetField([]string{"id"})
+		if resp.Error != nil {
+			fmt.Println(resp.Message)
+			return []map[string]any{}, resp
+		}
+		c.Id = int(data["id"].(int64))
 	}
+
 	data, err := db.DB.Query("projects", []string{}, map[string]any{"category": c.Id})
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return []map[string]any{}, responses.Response{
+			Message: err.Error(),
+			Status:  500,
+			Error:   err,
+		}
 	}
-
-	return map[string]any{"message": "Fetched", "data": data, "status": "200"}
+	return data, responses.Response{Status: 200, Message: "projects fetched successfully", Error: nil}
 }
 
-func GetProjectWhere(condition map[string]any) map[string]any {
+func GetProjectWhere(condition map[string]any) ([]map[string]any, responses.Response) {
 	data, err := db.DB.Query("projects", []string{}, condition)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return []map[string]any{}, responses.Response{Status: 500, Message: err.Error(), Error: err}
 	}
-	return map[string]any{"message": "Fetched", "data": data, "status": "200"}
+	return data, responses.Response{Status: 200, Message: "projects fetched successfully", Error: nil}
 }

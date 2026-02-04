@@ -1,7 +1,10 @@
 package category
 
 import (
+	"errors"
+
 	"github.com/srynprjl/sandwich/internal/utils/db"
+	"github.com/srynprjl/sandwich/internal/utils/responses"
 )
 
 func (c *Category) getConditions() map[string]any {
@@ -24,66 +27,115 @@ func (c *Category) DoesExists() (bool, error) {
 	return db.DB.CheckExists("categories", conditions)
 }
 
-func (c *Category) Add(data map[string]any) map[string]any {
+func (c *Category) Add(data map[string]any) responses.Response {
 	err := db.DB.InsertOne("categories", data)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return responses.Response{
+			Status:  500,
+			Message: err.Error(),
+			Error:   err,
+		}
 	}
-	return map[string](any){"message": "Success: Inserted data", "status": "201", "data": *c}
+	return responses.Response{
+		Status:  201,
+		Message: "Successfully added data!",
+		Error:   nil,
+	}
 }
 
-func (c *Category) Delete() map[string]any {
+func (c *Category) Delete() responses.Response {
 	exists, existErr := c.DoesExists()
 	if existErr != nil {
-		return map[string]any{"message": existErr.Error(), "status": "400"}
+		return responses.Response{
+			Status:  400,
+			Message: existErr.Error(),
+			Error:   existErr,
+		}
 	}
 	if !exists {
-		return map[string]any{"message": "The category doesn't exist", "status": "400"}
+		return responses.Response{
+			Status:  400,
+			Message: "category doesn't exist",
+			Error:   errors.New("category doesn't exist"),
+		}
 	}
 	conditions := c.getConditions()
 	err := db.DB.DeleteItem("categories", conditions)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return responses.Response{
+			Status:  500,
+			Message: err.Error(),
+			Error:   err,
+		}
 	}
-	return map[string]any{"message": "Deleted item", "status": "200"}
+	return responses.Response{
+		Status:  200,
+		Message: "successfully deleted item.",
+		Error:   nil,
+	}
 }
 
-func (c *Category) Update(updateItems map[string]any) map[string]any {
+func (c *Category) Update(updateItems map[string]any) responses.Response {
 	exists, existErr := c.DoesExists()
 	if existErr != nil {
-		return map[string]any{"message": existErr.Error(), "status": "400"}
+		return responses.Response{
+			Status:  400,
+			Message: existErr.Error(),
+			Error:   existErr,
+		}
 	}
 	if !exists {
-		return map[string]any{"message": "The category doesn't exist", "status": "400"}
+		return responses.Response{
+			Status:  400,
+			Message: "the category doesnt exist",
+			Error:   errors.New("the category doesnt exist"),
+		}
 	}
 	conditions := c.getConditions()
 	err := db.DB.UpdateItems("categories", updateItems, conditions)
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "500"}
+		return responses.Response{
+			Status:  500,
+			Message: err.Error(),
+			Error:   err,
+		}
 	}
-	return map[string]any{"message": "Updated successfully", "status": "200"}
+	return responses.Response{
+		Status:  200,
+		Message: "category update successfully",
+		Error:   existErr,
+	}
 }
 
-func (c *Category) GetField(field []string) map[string]any {
+func (c *Category) GetField(field []string) (map[string]any, responses.Response) {
 	conditions := c.getConditions()
 	data, err := db.DB.Query("categories", field, conditions)
-	if len(data) == 0 {
-		return map[string]any{"message": "Category not found", "status": 500, "data": map[string]any{}}
-	}
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": 500, "data": map[string]any{}}
+		return map[string]any{}, responses.Response{Status: 500, Message: err.Error(), Error: err}
 	}
-	return map[string]any{"message": "Success", "status": 200, "data": data[0]}
+	if len(data) == 0 {
+		return map[string]any{}, responses.Response{Status: 200, Message: "No field found.", Error: nil}
+	}
+	return data[0], responses.Response{
+		Status:  200,
+		Message: "fetched data successfully",
+		Error:   nil,
+	}
 }
 
-func GetAll() map[string]any {
-	conn := db.DB
-	conn.Connect()
-	defer conn.Conn.Close()
+func GetAll() ([]map[string]any, responses.Response) {
 	data, err := db.DB.Query("categories", []string{}, map[string]any{})
 	if err != nil {
-		return map[string]any{"message": err.Error(), "status": "400", "data": []Category{}}
+		return []map[string]any{}, responses.Response{
+			Status:  500,
+			Message: err.Error(),
+			Error:   err,
+		}
 	}
 
-	return map[string]any{"message": "Updated successfully", "status": "200", "data": data}
+	return data, responses.Response{
+		Status:  200,
+		Message: "data fetched succesfully",
+		Error:   nil,
+	}
 }
