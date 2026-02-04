@@ -1,4 +1,4 @@
-package impexp
+package exports
 
 import (
 	"encoding/json"
@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/srynprjl/sandwich/internal/logic"
-	"github.com/srynprjl/sandwich/utils/db"
+	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/sandwich/internal/utils/db"
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,8 +41,8 @@ func Export(fileFormat string, path string, fileName string, tables ...string) e
 		if err != nil {
 			return err
 		}
-		var cats []logic.Category
-		var proj []logic.Project
+		var cats []category.Category
+		var proj []projects.Project
 		// take data from that table and map to the map or struct idk
 		switch fileFormat {
 		case "json":
@@ -51,11 +52,11 @@ func Export(fileFormat string, path string, fileName string, tables ...string) e
 					return err
 				}
 				if table == "categories" {
-					var c logic.Category
+					var c category.Category
 					json.Unmarshal(mapData, &c)
 					cats = append(cats, c)
 				} else {
-					var p logic.Project
+					var p projects.Project
 					json.Unmarshal(mapData, &p)
 					proj = append(proj, p)
 				}
@@ -67,11 +68,11 @@ func Export(fileFormat string, path string, fileName string, tables ...string) e
 					return err
 				}
 				if table == "categories" {
-					var c logic.Category
+					var c category.Category
 					yaml.Unmarshal(mapData, &c)
 					cats = append(cats, c)
 				} else {
-					var p logic.Project
+					var p projects.Project
 					yaml.Unmarshal(mapData, &p)
 					proj = append(proj, p)
 				}

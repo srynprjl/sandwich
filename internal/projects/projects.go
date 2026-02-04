@@ -1,10 +1,11 @@
-package logic
+package projects
 
 import (
 	"database/sql"
 
-	"github.com/srynprjl/sandwich/utils/config"
-	"github.com/srynprjl/sandwich/utils/db"
+	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/internal/config"
+	"github.com/srynprjl/sandwich/internal/utils/db"
 )
 
 func (p *Project) Exists() (bool, error) {
@@ -27,7 +28,7 @@ func (p *Project) Exists() (bool, error) {
 }
 
 func (p *Project) Add(insertData map[string]any) map[string]any {
-	c := Category{Id: p.Category}
+	c := category.Category{Id: p.Category}
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
 			return map[string]any{"message": err.Error(), "status": "500"}
@@ -152,7 +153,7 @@ func (p *Project) GetField(field []string) map[string]any {
 	return map[string]any{"message": "Fetched.", "data": data[0], "status": "200"}
 }
 
-func GetProjects(c Category) map[string]any {
+func GetProjects(c category.Category) map[string]any {
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
 			return map[string]any{"message": err.Error(), "status": "500"}

@@ -1,7 +1,7 @@
-package logic
+package category
 
 import (
-	"github.com/srynprjl/sandwich/utils/db"
+	"github.com/srynprjl/sandwich/internal/utils/db"
 )
 
 func (c *Category) getConditions() map[string]any {

@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/srynprjl/sandwich/internal/logic"
+	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/internal/projects"
 )
 
 func CategoryGetAll(r http.ResponseWriter, w *http.Request) {
 	r.Header().Set("Content-Type", "application/json")
-	resp := logic.GetAll()
+	resp := category.GetAll()
 	if resp["status"] == "200" {
 		data := resp["data"].([]map[string]any)
 		json.NewEncoder(r).Encode(data)
@@ -21,7 +22,7 @@ func CategoryGetAll(r http.ResponseWriter, w *http.Request) {
 }
 
 func CategoryAdd(r http.ResponseWriter, w *http.Request) {
-	var c logic.Category
+	var c category.Category
 	var data = make(map[string]any)
 	json.NewDecoder(w.Body).Decode(&data)
 	resp := c.Add(data)
@@ -37,7 +38,7 @@ func CategoryDelete(r http.ResponseWriter, w *http.Request) {
 	if err != nil {
 		fmt.Fprint(r, err.Error())
 	}
-	c := logic.Category{Id: id}
+	c := category.Category{Id: id}
 	resp := c.Delete()
 	if resp["status"] != "200" {
 		fmt.Fprint(r, resp["message"])
@@ -53,7 +54,7 @@ func CategoryUpdate(r http.ResponseWriter, w *http.Request) {
 		fmt.Printf("Error!")
 		return
 	}
-	c := logic.Category{Id: id}
+	c := category.Category{Id: id}
 	updateData := make(map[string]any)
 	json.NewDecoder(w.Body).Decode(&updateData)
 	resp := c.Update(updateData)
@@ -68,8 +69,8 @@ func CategoryGetAllProjects(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error")
 		return
 	}
-	c := logic.Category{Id: id}
-	resp := logic.GetProjects(c)
+	c := category.Category{Id: id}
+	resp := projects.GetProjects(c)
 	if resp["status"] != "200" {
 		fmt.Fprintln(w, resp["message"])
 		return

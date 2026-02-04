@@ -11,9 +11,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/srynprjl/sandwich/internal/logic"
-	"github.com/srynprjl/sandwich/utils/config"
-	"github.com/srynprjl/sandwich/utils/db"
+	"github.com/srynprjl/sandwich/internal/config"
+	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/sandwich/internal/utils/db"
 )
 
 var projectCmd = &cobra.Command{
@@ -48,7 +48,7 @@ var projectCmd = &cobra.Command{
 		// projectMap["favorite"] = fav
 		// projectMap["released"] = comp
 		// projectMap["progress"] = progress
-		res := logic.GetProjectWhere(projectMap)
+		res := projects.GetProjectWhere(projectMap)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s", res["message"])
 			os.Exit(1)
@@ -75,7 +75,7 @@ var projectAddCmd = &cobra.Command{
 			data = c.GetField([]string{"id"})
 			category = int(data["data"].(map[string]any)["id"].(int64))
 		}
-		p := logic.Project{Category: category}
+		p := projects.Project{Category: category}
 		newData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			newData[f.Name] = f.Value
@@ -138,10 +138,10 @@ var projectViewCmd = &cobra.Command{
 		}
 		w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 		fmt.Fprintln(w, "Column\tValue")
-		var project logic.Project
+		var project projects.Project
 		byteData, _ := json.Marshal(res["data"].(map[string]any))
 		json.Unmarshal(byteData, &project)
-		t := reflect.TypeFor[logic.Project]()
+		t := reflect.TypeFor[projects.Project]()
 		v := reflect.ValueOf(project)
 		for i := range t.NumField() {
 			fieldType := t.Field(i)
@@ -158,7 +158,7 @@ var projectListAllCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := getCategoryForCondition(args)
-		res := logic.GetProjects(c)
+		res := projects.GetProjects(c)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
 			os.Exit(1)
@@ -182,7 +182,7 @@ var projectEditCmd = &cobra.Command{
 			fmt.Println("Error: couldn't convert id to integer")
 			os.Exit(1)
 		}
-		p := logic.Project{Id: id}
+		p := projects.Project{Id: id}
 		res := p.GetField([]string{"path"})
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])

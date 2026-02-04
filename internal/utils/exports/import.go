@@ -1,4 +1,4 @@
-package impexp
+package exports
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/srynprjl/sandwich/utils/db"
+	"github.com/srynprjl/sandwich/internal/utils/db"
 	"gopkg.in/yaml.v3"
 )
 

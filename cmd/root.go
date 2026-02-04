@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	impexp "github.com/srynprjl/sandwich/utils/imp_exp"
+	"github.com/srynprjl/sandwich/internal/utils/exports"
 )
 
 var rootCmd = &cobra.Command{
@@ -39,7 +39,7 @@ var importCmd = &cobra.Command{
 			fmt.Println("Error: " + pErr.Error())
 			return
 		}
-		err := impexp.Import(fileFormat, path)
+		err := exports.Import(fileFormat, path)
 		if err != nil {
 
 			return
@@ -74,7 +74,7 @@ var exportCmd = &cobra.Command{
 			return
 		}
 
-		err := impexp.Export(fileFormat, path, name, tables...)
+		err := exports.Export(fileFormat, path, name, tables...)
 		if err != nil {
 			fmt.Println("Error: " + err.Error())
 			return

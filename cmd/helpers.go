@@ -3,19 +3,20 @@ package cmd
 import (
 	"strconv"
 
-	"github.com/srynprjl/sandwich/internal/logic"
+	"github.com/srynprjl/sandwich/internal/category"
+	"github.com/srynprjl/sandwich/internal/projects"
 )
 
-func getCategoryForCondition(args []string) (c logic.Category) {
+func getCategoryForCondition(args []string) category.Category {
 	if data, err := strconv.Atoi(args[0]); err == nil {
-		return logic.Category{Id: data}
+		return category.Category{Id: data}
 	}
-	return logic.Category{Shorthand: args[0]}
+	return category.Category{Shorthand: args[0]}
 }
 
-func getProjectsForCondition(args []string) (p logic.Project) {
+func getProjectsForCondition(args []string) projects.Project {
 	if data, err := strconv.Atoi(args[0]); err == nil {
-		return logic.Project{Id: data}
+		return projects.Project{Id: data}
 	}
-	return logic.Project{ProjectId: args[0]}
+	return projects.Project{ProjectId: args[0]}
 }
