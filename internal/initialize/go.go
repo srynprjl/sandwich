@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	"fmt"
@@ -41,14 +41,14 @@ func InitGo(project_data map[string]any) {
 		fmt.Println("Error:", filErr.Error())
 		return
 	}
-	// temporary solution until i use git to write templates
-	fil.WriteString(`
-			package main
-			func main(){
-				print("This project was created using Sandwich")
-			}
-			`)
+	// temporary solution until i use git to write templates idk or find a better way
+	fil.WriteString(`package main
+
+func main(){
+	print("This project was created using Sandwich")
+}`)
 	fil.Close()
 	// Initialize a git repository
+	
 
 }

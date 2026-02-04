@@ -9,15 +9,14 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "sandwich",
+	Use:   "stack",
 	Short: "A project management app for personal use",
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
-			version = "1.0.0a.01"
-			date    = "03/02/2026"
+			version = "alpha"
 		)
 		if v, _ := cmd.Flags().GetBool("version"); v {
-			fmt.Printf("sandwich %v\nCopyright (C) 2026 sysnefo.\nBuilt on: %s", version, date)
+			fmt.Printf("stack %v\nCopyright (C) 2026 sysnefo.", version)
 		} else {
 			cmd.Help()
 		}

@@ -1,4 +1,4 @@
-# Sandwich
+# Stack
 A project management app for personal use.
 
 ## Features
@@ -28,12 +28,10 @@ A project management app for personal use.
 
 ## CLI Usage
 
-The CLI is built using `cobra`.
-
 ### Root Command
 
 ```bash
-sandwich [command]
+stack [command]
 ```
 
 ### Subcommands
@@ -46,7 +44,7 @@ The available subcommands are:
 #### Category Command
 
 ```bash
-sandwich category [subcommand]
+stack category [subcommand]
 ```
 
 - `add`: Add a new category.
@@ -57,7 +55,7 @@ sandwich category [subcommand]
 #### Project Command
 
 ```bash
-sandwich project [subcommand]
+stack project [subcommand]
 ```
 
 - `add`: Add a new project.
@@ -70,17 +68,17 @@ sandwich project [subcommand]
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/srynprjl/sandwich.git
+    git clone https://github.com/srynprjl/stack.git
     ```
 2.  Go to the project directory:
     ```bash
-    cd sandwich
+    cd stack
     ```
 3.  Build the project:
     ```bash
-    go build
+    go build -o stack
     ```
 4.  Run the application:
     ```bash
-    ./sandwich
+    ./stack
     ```

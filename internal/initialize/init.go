@@ -1,4 +1,4 @@
-package init
+package initialize
 
 import (
 	"fmt"
@@ -13,7 +13,6 @@ import (
 func Init(lang string, p projects.Project) {
 	fmt.Println("Support for " + lang + " is avalaible")
 	exists, _ := p.Exists()
-	// fmt.Println(exists)
 	if !exists {
 		fmt.Println("Project not found! creating a new Project.")
 		var name, shorthand, cats string
@@ -78,7 +77,6 @@ func Init(lang string, p projects.Project) {
 	// call functions based on lang
 	switch lang {
 	case "go", "golang":
-		fmt.Println(project_data)
 		InitGo(project_data)
 	case "js", "javascript":
 	// code here

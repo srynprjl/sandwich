@@ -18,8 +18,9 @@ var categoryCmd = &cobra.Command{
 }
 
 var addCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add a category",
+	Use:     "add",
+	Aliases: []string{"push"},
+	Short:   "Add a category",
 	Run: func(cmd *cobra.Command, args []string) {
 		var data = make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
@@ -37,12 +38,12 @@ var addCmd = &cobra.Command{
 	},
 }
 var deleteCmd = &cobra.Command{
-	Use:   "delete [id | uid]",
-	Short: "Delete a category",
-	Args:  cobra.MinimumNArgs(1),
+	Use:     "delete [uid]",
+	Aliases: []string{"pop"},
+	Short:   "Delete a category",
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
-		c := GetCategoryForCondition(args)
+		c := category.Category{Shorthand: args[0]}
 		res := c.Delete()
 		if res["status"] != "200" {
 			fmt.Println("Failed: " + res["message"].(string))
@@ -53,11 +54,12 @@ var deleteCmd = &cobra.Command{
 }
 
 var updateCmd = &cobra.Command{
-	Use:   "update [id | uid]",
-	Short: "Update a category",
-	Args:  cobra.MinimumNArgs(1),
+	Use:     "update [uid]",
+	Aliases: []string{"patch"},
+	Short:   "Update a category",
+	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := GetCategoryForCondition(args)
+		c := category.Category{Shorthand: args[0]}
 		updateData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			if f.Changed {
@@ -74,8 +76,9 @@ var updateCmd = &cobra.Command{
 }
 
 var viewCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all categories",
+	Use:     "list",
+	Aliases: []string{"trace"},
+	Short:   "List all categories",
 	Run: func(cmd *cobra.Command, args []string) {
 		res := category.GetAll()
 		if res["status"] != "200" {
@@ -83,9 +86,9 @@ var viewCmd = &cobra.Command{
 			return
 		}
 		t := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
-		fmt.Fprintf(t, "ID\tUID\tName\tDescription\n")
-		for _, data := range res["data"].([]map[string]any) {
-			fmt.Fprintf(t, "%v\t%v\t%v\t%v\n", data["id"], data["shorthand"], data["name"], data["description"])
+		fmt.Fprintf(t, "Index\tUID\tName\tDescription\n")
+		for i, data := range res["data"].([]map[string]any) {
+			fmt.Fprintf(t, "%v\t%v\t%v\t%v\n", i+1, data["shorthand"], data["name"], data["description"])
 		}
 		t.Flush()
 
