@@ -7,14 +7,14 @@ import (
 	"github.com/srynprjl/sandwich/internal/projects"
 )
 
-func getCategoryForCondition(args []string) category.Category {
+func GetCategoryForCondition(args []string) category.Category {
 	if data, err := strconv.Atoi(args[0]); err == nil {
 		return category.Category{Id: data}
 	}
 	return category.Category{Shorthand: args[0]}
 }
 
-func getProjectsForCondition(args []string) projects.Project {
+func GetProjectsForCondition(args []string) projects.Project {
 	if data, err := strconv.Atoi(args[0]); err == nil {
 		return projects.Project{Id: data}
 	}

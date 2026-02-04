@@ -67,10 +67,13 @@ func (c *Category) Update(updateItems map[string]any) map[string]any {
 func (c *Category) GetField(field []string) map[string]any {
 	conditions := c.getConditions()
 	data, err := db.DB.Query("categories", field, conditions)
+	if len(data) == 0 {
+		return map[string]any{"message": "Category not found", "status": 500, "data": map[string]any{}}
+	}
 	if err != nil {
 		return map[string]any{"message": err.Error(), "status": 500, "data": map[string]any{}}
 	}
-	return map[string]any{"message": "Succcess", "status": 200, "data": data[0]}
+	return map[string]any{"message": "Success", "status": 200, "data": data[0]}
 }
 
 func GetAll() map[string]any {

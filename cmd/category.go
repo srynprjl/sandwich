@@ -36,13 +36,13 @@ var addCmd = &cobra.Command{
 		fmt.Println("Failed: " + res["message"].(string))
 	},
 }
-
 var deleteCmd = &cobra.Command{
 	Use:   "delete [id | uid]",
 	Short: "Delete a category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := getCategoryForCondition(args)
+
+		c := GetCategoryForCondition(args)
 		res := c.Delete()
 		if res["status"] != "200" {
 			fmt.Println("Failed: " + res["message"].(string))
@@ -57,7 +57,7 @@ var updateCmd = &cobra.Command{
 	Short: "Update a category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := getCategoryForCondition(args)
+		c := GetCategoryForCondition(args)
 		updateData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			if f.Changed {

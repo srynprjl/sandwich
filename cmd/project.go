@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/srynprjl/sandwich/internal/config"
+	s "github.com/srynprjl/sandwich/internal/init"
 	"github.com/srynprjl/sandwich/internal/projects"
 	"github.com/srynprjl/sandwich/internal/utils/db"
 )
@@ -68,7 +69,7 @@ var projectAddCmd = &cobra.Command{
 	Short: "Add a project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := getCategoryForCondition(args)
+		c := GetCategoryForCondition(args)
 		var data map[string]any
 		category := c.Id
 		if category == 0 {
@@ -95,7 +96,7 @@ var projectDeleteCmd = &cobra.Command{
 	Short: "Delete the project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p := getProjectsForCondition(args)
+		p := GetProjectsForCondition(args)
 		res := p.Remove()
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
@@ -109,7 +110,7 @@ var projectUpdateCmd = &cobra.Command{
 	Use:   "update [id | uid]",
 	Short: "Update the information about the project",
 	Run: func(cmd *cobra.Command, args []string) {
-		p := getProjectsForCondition(args)
+		p := GetProjectsForCondition(args)
 		newData := make(map[string]any)
 		cmd.Flags().Visit(func(f *pflag.Flag) {
 			if f.Changed {
@@ -130,7 +131,7 @@ var projectViewCmd = &cobra.Command{
 	Short: "View information about the project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p := getProjectsForCondition(args)
+		p := GetProjectsForCondition(args)
 		res := p.Get()
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
@@ -157,7 +158,7 @@ var projectListAllCmd = &cobra.Command{
 	Short: "List all the project in the category",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := getCategoryForCondition(args)
+		c := GetCategoryForCondition(args)
 		res := projects.GetProjects(c)
 		if res["status"] != "200" {
 			fmt.Printf("Error: %s\n", res["message"])
@@ -206,12 +207,43 @@ var projectEditCmd = &cobra.Command{
 	},
 }
 
+var projectInitCommand = &cobra.Command{
+	Use:   "init [id | uid]",
+	Short: "Initialize a project",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("COMING SOON")
+		p := GetProjectsForCondition(args)
+		var argsCorrect bool = false
+		str, _ := cmd.Flags().GetString("lang")
+		switch str {
+		case
+			"go", "golang",
+			"rust",
+			"java",
+			"kotlin",
+			"python", "py",
+			"js", "javascript":
+			argsCorrect = true
+		}
+		if !argsCorrect {
+			fmt.Println("No support for the language.")
+			return
+		}
+		s.Init(str, &p)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(projectCmd)
-	projectCmd.AddCommand(projectAddCmd, projectDeleteCmd, projectEditCmd, projectUpdateCmd, projectViewCmd, projectListAllCmd)
+	projectCmd.AddCommand(projectAddCmd, projectDeleteCmd, projectEditCmd, projectUpdateCmd, projectViewCmd, projectListAllCmd, projectInitCommand)
+
 	projectCmd.Flags().BoolP("favorite", "f", false, "List all favorite projects")
 	projectCmd.Flags().BoolP("released", "r", false, "List all completed projects")
 	projectCmd.Flags().BoolP("progress", "p", false, "List all projects that are in progress")
+
+	projectInitCommand.Flags().StringP("lang", "l", "", "Which language to make?")
+	projectInitCommand.MarkFlagRequired("lang")
 	fields := config.DefaultTables["projects"].Columns[2:]
 	for _, data := range fields {
 		var def, ok = db.GetDefaultValues("projects", data)

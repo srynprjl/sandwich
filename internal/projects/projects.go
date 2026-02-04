@@ -2,6 +2,7 @@ package projects
 
 import (
 	"database/sql"
+	"errors"
 
 	"github.com/srynprjl/sandwich/internal/category"
 	"github.com/srynprjl/sandwich/internal/config"
@@ -10,10 +11,17 @@ import (
 
 func (p *Project) Exists() (bool, error) {
 	if p.Id == 0 {
-		p.Id = int(p.GetField([]string{"id"})["data"].(map[string]any)["id"].(int64))
+		d := p.GetField([]string{"id"})["data"].(map[string]any)
+		if len(d) == 0 {
+			return false, errors.New("Doesnt Exist")
+		}
+		p.Id = int(d["id"].(int64))
 	}
 	if p.Category == 0 {
 		d := p.GetField([]string{"category"})["data"].(map[string]any)
+		if len(d) == 0 {
+			return false, errors.New("Doesnt Exist")
+		}
 		p.Category = int(d["category"].(int64))
 	}
 	exists, err := db.DB.CheckExists("projects", map[string]any{"id": p.Id, "category": p.Category})
@@ -103,8 +111,13 @@ func (p *Project) Update(updateData map[string]any) map[string]any {
 
 func (p *Project) Get() map[string]any {
 	if p.Category == 0 {
-		d := p.GetField([]string{"category"})["data"].(map[string]any)
-		p.Category = int(d["category"].(int64))
+		data := p.GetField([]string{"category"})["data"].(map[string]any)
+
+		if len(data) == 0 {
+			return map[string]any{"message": "No project found in that category", "status": "400"}
+		}
+		d := int(data["category"].(int64))
+		p.Category = d
 	}
 	if exists, err := p.Exists(); !exists {
 		if err != nil {

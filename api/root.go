@@ -7,9 +7,7 @@ import (
 
 func Api(host string, port int) {
 	mux := http.NewServeMux()
-
-	// categories
-
+	fmt.Println(host, port)
 	mux.HandleFunc("GET /api/category", CategoryGetAll)
 	mux.HandleFunc("POST /api/category", CategoryAdd)
 	mux.HandleFunc("PATCH /api/category/{id}", CategoryUpdate)
@@ -25,7 +23,7 @@ func Api(host string, port int) {
 	mux.HandleFunc("DELETE /api/category/{catId}/projects/{id}", ProjectDelete)
 
 	// server start
-	fmt.Println("Starting server...!")
+	fmt.Printf("Starting server...! at http://%s:%d", host, port)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, port), mux)
 	if err != nil {
 		fmt.Println(err.Error())
