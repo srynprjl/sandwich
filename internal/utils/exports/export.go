@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/internal/projects"
-	"github.com/srynprjl/sandwich/internal/utils/db"
+	"github.com/srynprjl/stack/internal/category"
+	"github.com/srynprjl/stack/internal/projects"
+	"github.com/srynprjl/stack/internal/utils/db"
 	"gopkg.in/yaml.v3"
 )
 

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/srynprjl/sandwich/internal/config"
+	"github.com/srynprjl/stack/internal/config"
 )
 
 func (db *Database) CreateTable(name string, columns []string, coltype []string, constraints config.Constraints) error {

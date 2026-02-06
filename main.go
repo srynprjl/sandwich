@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/srynprjl/sandwich/cmd"
-	"github.com/srynprjl/sandwich/internal/config"
-	"github.com/srynprjl/sandwich/internal/utils/db"
+	"github.com/srynprjl/stack/cmd"
+	"github.com/srynprjl/stack/internal/config"
+	"github.com/srynprjl/stack/internal/utils/db"
 )
 
 func startup() {

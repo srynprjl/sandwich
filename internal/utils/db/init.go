@@ -6,7 +6,7 @@ import (
 	"os"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/srynprjl/sandwich/internal/config"
+	"github.com/srynprjl/stack/internal/config"
 )
 
 type Database struct {

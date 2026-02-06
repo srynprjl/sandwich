@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/internal/config"
-	"github.com/srynprjl/sandwich/internal/utils/db"
+	"github.com/srynprjl/stack/internal/category"
+	"github.com/srynprjl/stack/internal/config"
+	"github.com/srynprjl/stack/internal/utils/db"
 )
 
 var categoryCmd = &cobra.Command{

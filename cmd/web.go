@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/srynprjl/sandwich/api"
+	"github.com/srynprjl/stack/api"
 )
 
 var port int

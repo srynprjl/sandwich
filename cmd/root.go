@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
-	"github.com/srynprjl/sandwich/internal/utils/exports"
+	"github.com/srynprjl/stack/internal/utils/exports"
 )
 
 var rootCmd = &cobra.Command{

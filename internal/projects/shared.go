@@ -3,7 +3,7 @@ package projects
 import (
 	"errors"
 
-	"github.com/srynprjl/sandwich/internal/utils/responses"
+	"github.com/srynprjl/stack/internal/utils/responses"
 )
 
 func (p *Project) checkIfCategoryExists() responses.Response {

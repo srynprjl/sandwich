@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/stack/internal/category"
+	"github.com/srynprjl/stack/internal/projects"
 )
 
 func ProjectGet(w http.ResponseWriter, r *http.Request) {

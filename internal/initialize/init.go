@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/internal/config"
-	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/stack/internal/category"
+	"github.com/srynprjl/stack/internal/config"
+	"github.com/srynprjl/stack/internal/projects"
 )
 
 func Init(lang string, p projects.Project) {

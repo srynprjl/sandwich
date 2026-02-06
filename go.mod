@@ -1,4 +1,4 @@
-module github.com/srynprjl/sandwich
+module github.com/srynprjl/stack
 
 go 1.25.6
 

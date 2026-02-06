@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/srynprjl/sandwich/internal/category"
-	"github.com/srynprjl/sandwich/internal/projects"
+	"github.com/srynprjl/stack/internal/category"
+	"github.com/srynprjl/stack/internal/projects"
 )
 
 func CategoryGetAll(r http.ResponseWriter, w *http.Request) {

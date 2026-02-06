@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/srynprjl/sandwich/internal/utils/db"
+	"github.com/srynprjl/stack/internal/utils/db"
 	"gopkg.in/yaml.v3"
 )
 

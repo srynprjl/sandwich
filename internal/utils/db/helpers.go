@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/srynprjl/sandwich/internal/config"
+	"github.com/srynprjl/stack/internal/config"
 )
 
 func BuildForeignKeyStatement(foreignKey []config.ForeignKey) string {

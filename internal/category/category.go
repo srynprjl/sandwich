@@ -3,8 +3,8 @@ package category
 import (
 	"errors"
 
-	"github.com/srynprjl/sandwich/internal/utils/db"
-	"github.com/srynprjl/sandwich/internal/utils/responses"
+	"github.com/srynprjl/stack/internal/utils/db"
+	"github.com/srynprjl/stack/internal/utils/responses"
 )
 
 func (c *Category) getConditions() map[string]any {
