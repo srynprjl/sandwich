@@ -193,6 +193,7 @@ var projectInitCommand = &cobra.Command{
 		p := projects.Project{UID: args[0]}
 		var argsCorrect bool = false
 		str, _ := cmd.Flags().GetString("lang")
+		dep, _ := cmd.Flags().GetStringSlice("dep")
 		switch str {
 		case
 			"go", "golang",
@@ -207,7 +208,8 @@ var projectInitCommand = &cobra.Command{
 			fmt.Println("No support for the language.")
 			return
 		}
-		initialize.Init(str, p)
+
+		initialize.Init(str, p, dep)
 	},
 }
 
@@ -221,6 +223,8 @@ func init() {
 
 	projectInitCommand.Flags().StringP("lang", "l", "", "Which language to make?")
 	projectInitCommand.MarkFlagRequired("lang")
+	projectInitCommand.Flags().StringSliceP("dep", "d", []string{}, "List of Dependencies")
+
 	fields := config.DefaultTables["projects"].Columns[2:]
 	for _, data := range fields {
 		var def, ok = db.GetDefaultValues("projects", data)

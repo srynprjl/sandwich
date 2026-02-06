@@ -9,7 +9,7 @@ import (
 	"github.com/srynprjl/stack/internal/projects"
 )
 
-func Init(lang string, p projects.Project) {
+func Init(lang string, p projects.Project, dependencies []string) {
 	exists, _ := p.Exists()
 	if !exists {
 		fmt.Println("Project not found! creating a new Project.")
@@ -78,6 +78,6 @@ func Init(lang string, p projects.Project) {
 	case "kotlin", "kt":
 	// code here
 	case "python", "py":
-		InitPython(data)
+		InitPython(data, dependencies)
 	}
 }
