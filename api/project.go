@@ -14,14 +14,14 @@ func ProjectGet(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	id := r.PathValue("id")
 	catUUID := r.PathValue("catId")
-	c := category.Category{Uuid: catUUID}
+	c := category.Category{UUID: catUUID}
 	d, res := c.GetField([]string{"id"})
 	if res.Error != nil {
 		json.NewEncoder(w).Encode(res.WebResponse())
 	}
 	catId := int(d["id"].(int64))
 
-	project := projects.Project{Uuid: id, Category: catId}
+	project := projects.Project{UUID: id, Category: catId}
 	data, resp := project.Get()
 	response := resp.WebResponse()
 	response["data"] = data
@@ -51,7 +51,7 @@ func ProjectGetNRandom(w http.ResponseWriter, r *http.Request) {
 
 func ProjectAdd(w http.ResponseWriter, r *http.Request) {
 	catUUID := r.PathValue("catId")
-	c := category.Category{Uuid: catUUID}
+	c := category.Category{UUID: catUUID}
 	d, res := c.GetField([]string{"id"})
 	if res.Error != nil {
 		json.NewEncoder(w).Encode(res.WebResponse())
@@ -70,14 +70,14 @@ func ProjectDelete(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	catUUID := r.PathValue("catId")
 
-	c := category.Category{Uuid: catUUID}
+	c := category.Category{UUID: catUUID}
 	d, res := c.GetField([]string{"id"})
 	if res.Error != nil {
 		json.NewEncoder(w).Encode(res.WebResponse())
 	}
 	catId := int(d["id"].(int64))
 
-	p := projects.Project{Uuid: id, Category: catId}
+	p := projects.Project{UUID: id, Category: catId}
 	resp := p.Remove()
 	json.NewEncoder(w).Encode(resp.WebResponse())
 }
@@ -86,14 +86,14 @@ func ProjectUpdate(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	catUUID := r.PathValue("catId")
 
-	c := category.Category{Uuid: catUUID}
+	c := category.Category{UUID: catUUID}
 	d, res := c.GetField([]string{"id"})
 	if res.Error != nil {
 		json.NewEncoder(w).Encode(res.WebResponse())
 	}
 	catId := int(d["id"].(int64))
 
-	p := projects.Project{Uuid: id, Category: catId}
+	p := projects.Project{UUID: id, Category: catId}
 
 	var data map[string]any
 

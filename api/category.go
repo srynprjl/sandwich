@@ -26,14 +26,14 @@ func CategoryAdd(r http.ResponseWriter, w *http.Request) {
 }
 
 func CategoryDelete(r http.ResponseWriter, w *http.Request) {
-	c := category.Category{Uuid: w.PathValue("id")}
+	c := category.Category{UUID: w.PathValue("id")}
 	resp := c.Delete()
 	json.NewEncoder(r).Encode(resp.WebResponse())
 }
 
 func CategoryUpdate(r http.ResponseWriter, w *http.Request) {
 	id := w.PathValue("id")
-	c := category.Category{Uuid: id}
+	c := category.Category{UUID: id}
 	updateData := make(map[string]any)
 	json.NewDecoder(w.Body).Decode(&updateData)
 	resp := c.Update(updateData)
@@ -44,7 +44,7 @@ func CategoryUpdate(r http.ResponseWriter, w *http.Request) {
 func CategoryGetAllProjects(r http.ResponseWriter, w *http.Request) {
 	r.Header().Set("Content-Type", "application/json")
 	id := w.PathValue("id")
-	c := category.Category{Uuid: id}
+	c := category.Category{UUID: id}
 	data, res := projects.GetProjects(c)
 	if res.Status != 200 {
 		fmt.Printf("Error: %s\n", res.Message)

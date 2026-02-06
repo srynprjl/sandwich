@@ -9,14 +9,14 @@ import (
 
 func GetCategoryForCondition(args []string) category.Category {
 	if data, err := strconv.Atoi(args[0]); err == nil {
-		return category.Category{Id: data}
+		return category.Category{ID: data}
 	}
-	return category.Category{Shorthand: args[0]}
+	return category.Category{UID: args[0]}
 }
 
 func GetProjectsForCondition(args []string) projects.Project {
 	if data, err := strconv.Atoi(args[0]); err == nil {
-		return projects.Project{Id: data}
+		return projects.Project{ID: data}
 	}
-	return projects.Project{ProjectId: args[0]}
+	return projects.Project{UID: args[0]}
 }

@@ -19,18 +19,18 @@ func Init(lang string, p projects.Project) {
 		fmt.Print("Name: \n>>")
 		fmt.Scan(&name)
 		fmt.Print("Shorthand: \n>>")
-		if p.ProjectId == "" {
+		if p.UID == "" {
 			fmt.Scan(&shorthand)
 		} else {
-			fmt.Print(p.ProjectId + "\n")
-			shorthand = p.ProjectId
+			fmt.Print(p.UID + "\n")
+			shorthand = p.UID
 		}
 		fmt.Print("Category: \n>>")
 		fmt.Scan(&cats)
 		//selection later
 		var c category.Category
-		c = category.Category{Shorthand: cats}
-		cat := c.Id
+		c = category.Category{UID: cats}
+		cat := c.ID
 		data, resp := c.GetField([]string{"id"})
 		if resp.Error != nil {
 			fmt.Println(resp.Message)

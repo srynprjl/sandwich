@@ -9,14 +9,14 @@ import (
 
 func (c *Category) getConditions() map[string]any {
 	conditions := make(map[string]any)
-	if c.Id != 0 {
-		conditions["id"] = c.Id
+	if c.ID != 0 {
+		conditions["id"] = c.ID
 	}
-	if c.Shorthand != "" {
-		conditions["shorthand"] = c.Shorthand
+	if c.UID != "" {
+		conditions["shorthand"] = c.UID
 	}
-	if c.Uuid != "" {
-		conditions["uuid"] = c.Uuid
+	if c.UUID != "" {
+		conditions["uuid"] = c.UUID
 	}
 
 	return conditions

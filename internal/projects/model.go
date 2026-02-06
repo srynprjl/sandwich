@@ -1,9 +1,9 @@
 package projects
 
 type Project struct {
-	Id          int    `json:"id" yaml:"id"`
-	Uuid        string `json:"uuid" yaml:"uuid"`
-	ProjectId   string `json:"shorthand" yaml:"shorthand"`
+	ID          int    `json:"id" yaml:"id"`
+	UUID        string `json:"uuid" yaml:"uuid"`
+	UID         string `json:"shorthand" yaml:"shorthand"`
 	Title       string `json:"name" yaml:"name"`
 	Description string `json:"description" yaml:"description"`
 	Path        string `json:"path" yaml:"path"`

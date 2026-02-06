@@ -51,7 +51,7 @@ var projectAddCmd = &cobra.Command{
 	Short:   "Add a project",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := category.Category{Shorthand: args[0]}
+		c := category.Category{UID: args[0]}
 		data, resp := c.GetField([]string{"id"})
 		if resp.Error != nil {
 			fmt.Println("Error: " + resp.Message)
@@ -78,7 +78,7 @@ var projectDeleteCmd = &cobra.Command{
 	Short:   "Delete the project",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p := projects.Project{ProjectId: args[0]}
+		p := projects.Project{UID: args[0]}
 		res := p.Remove()
 		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
@@ -93,7 +93,7 @@ var projectUpdateCmd = &cobra.Command{
 	Aliases: []string{"patch"},
 	Short:   "Update the information about the project",
 	Run: func(cmd *cobra.Command, args []string) {
-		p := projects.Project{ProjectId: args[0]}
+		p := projects.Project{UID: args[0]}
 		newData := make(map[string]any)
 		cmd.Flags().Visit(func(f *pflag.Flag) {
 			if f.Changed {
@@ -115,7 +115,7 @@ var projectViewCmd = &cobra.Command{
 	Short:   "View information about the project",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p := projects.Project{ProjectId: args[0]}
+		p := projects.Project{UID: args[0]}
 		data, res := p.Get()
 		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
@@ -143,7 +143,7 @@ var projectListAllCmd = &cobra.Command{
 	Short:   "List all the project in the category",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := category.Category{Shorthand: args[0]}
+		c := category.Category{UID: args[0]}
 		data, res := projects.GetProjects(c)
 		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
@@ -163,7 +163,7 @@ var projectEditCmd = &cobra.Command{
 	Short: "Edit the project using your default editor",
 	Run: func(cmd *cobra.Command, args []string) {
 		defaultEditor := os.Getenv("EDITOR")
-		p := projects.Project{ProjectId: args[0]}
+		p := projects.Project{UID: args[0]}
 		data, res := p.GetField([]string{"path"})
 		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
@@ -190,7 +190,7 @@ var projectInitCommand = &cobra.Command{
 	Short: "Initialize a project",
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		p := projects.Project{ProjectId: args[0]}
+		p := projects.Project{UID: args[0]}
 		var argsCorrect bool = false
 		str, _ := cmd.Flags().GetString("lang")
 		switch str {

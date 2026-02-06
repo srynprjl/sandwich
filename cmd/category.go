@@ -44,7 +44,7 @@ var deleteCmd = &cobra.Command{
 	Short:   "Delete a category",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := category.Category{Shorthand: args[0]}
+		c := category.Category{UID: args[0]}
 		res := c.Delete()
 		if res.Error != nil {
 			fmt.Println("Failed: " + res.Message)
@@ -60,7 +60,7 @@ var updateCmd = &cobra.Command{
 	Short:   "Update a category",
 	Args:    cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := category.Category{Shorthand: args[0]}
+		c := category.Category{UID: args[0]}
 		updateData := make(map[string]any)
 		cmd.Flags().VisitAll(func(f *pflag.Flag) {
 			if f.Changed {

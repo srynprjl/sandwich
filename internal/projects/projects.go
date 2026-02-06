@@ -12,7 +12,7 @@ import (
 )
 
 func (p *Project) Exists() (bool, error) {
-	if p.ProjectId == "" {
+	if p.UID == "" {
 		d, res := p.GetField([]string{"shorthand"})
 		if res.Error != nil {
 			return false, res.Error
@@ -20,7 +20,7 @@ func (p *Project) Exists() (bool, error) {
 		if len(d) == 0 {
 			return false, errors.New("project doesn't exist")
 		}
-		p.ProjectId = d["shorthand"].(string)
+		p.UID = d["shorthand"].(string)
 	}
 	if p.Category == 0 {
 		d, res := p.GetField([]string{"category"})
@@ -32,7 +32,7 @@ func (p *Project) Exists() (bool, error) {
 		}
 		p.Category = int(d["category"].(int64))
 	}
-	exists, err := db.DB.CheckExists("projects", map[string]any{"shorthand": p.ProjectId, "category": p.Category})
+	exists, err := db.DB.CheckExists("projects", map[string]any{"shorthand": p.UID, "category": p.Category})
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return exists, nil
@@ -44,7 +44,7 @@ func (p *Project) Exists() (bool, error) {
 }
 
 func (p *Project) Add(insertData map[string]any) responses.Response {
-	c := category.Category{Id: p.Category}
+	c := category.Category{ID: p.Category}
 	if exists, err := c.DoesExists(); !exists {
 		if err != nil {
 			return responses.Response{
@@ -125,7 +125,7 @@ func (p *Project) Update(updateData map[string]any) responses.Response {
 			Error:   nil,
 		}
 	}
-	err := db.DB.UpdateItems("projects", validatedData, map[string]any{"id": p.Id})
+	err := db.DB.UpdateItems("projects", validatedData, map[string]any{"id": p.ID})
 	if err != nil {
 		return responses.Response{
 			Error:   err,
@@ -145,7 +145,7 @@ func (p *Project) Get() (map[string]any, responses.Response) {
 	if resp.Error != nil {
 		return map[string]any{}, resp
 	}
-	data, err := db.DB.QueryLimit("projects", []string{}, map[string]any{"shorthand": p.ProjectId, "category": p.Category}, 1)
+	data, err := db.DB.QueryLimit("projects", []string{}, map[string]any{"shorthand": p.UID, "category": p.Category}, 1)
 	if err != nil {
 		return map[string]any{}, responses.Response{
 			Message: err.Error(),
@@ -215,16 +215,16 @@ func GetProjects(c category.Category) ([]map[string]any, responses.Response) {
 			Error:   errors.New("category not found"),
 		}
 	}
-	if c.Id == 0 {
+	if c.ID == 0 {
 		data, resp := c.GetField([]string{"id"})
 		if resp.Error != nil {
 			fmt.Println(resp.Message)
 			return []map[string]any{}, resp
 		}
-		c.Id = int(data["id"].(int64))
+		c.ID = int(data["id"].(int64))
 	}
 
-	data, err := db.DB.Query("projects", []string{}, map[string]any{"category": c.Id})
+	data, err := db.DB.Query("projects", []string{}, map[string]any{"category": c.ID})
 	if err != nil {
 		return []map[string]any{}, responses.Response{
 			Message: err.Error(),

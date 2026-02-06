@@ -46,11 +46,11 @@ func (p *Project) checkIfCategoryExists() responses.Response {
 
 func (p Project) makeConditions() map[string]any {
 	conditions := make(map[string]any)
-	if p.ProjectId != "" {
-		conditions["shorthand"] = p.ProjectId
+	if p.UID != "" {
+		conditions["shorthand"] = p.UID
 	}
-	if p.Uuid != "" {
-		conditions["uuid"] = p.Uuid
+	if p.UUID != "" {
+		conditions["uuid"] = p.UUID
 	}
 
 	return conditions
