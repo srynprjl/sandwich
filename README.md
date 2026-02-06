@@ -1,5 +1,5 @@
-# Stack
-A project management app for personal use.
+# Stack 
+A project management app for personal use. 
 
 ## Features
 

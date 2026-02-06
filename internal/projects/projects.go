@@ -125,7 +125,8 @@ func (p *Project) Update(updateData map[string]any) responses.Response {
 			Error:   nil,
 		}
 	}
-	err := db.DB.UpdateItems("projects", validatedData, map[string]any{"id": p.ID})
+
+	err := db.DB.UpdateItems("projects", validatedData, map[string]any{"shorthand": p.UID})
 	if err != nil {
 		return responses.Response{
 			Error:   err,
