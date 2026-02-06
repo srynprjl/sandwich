@@ -32,7 +32,7 @@ var projectCmd = &cobra.Command{
 			return
 		}
 		data, res := projects.GetProjectWhere(projectMap)
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}
@@ -64,7 +64,7 @@ var projectAddCmd = &cobra.Command{
 		})
 		newData["category"] = cats
 		res := p.Add(newData)
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}
@@ -80,7 +80,7 @@ var projectDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p := projects.Project{ProjectId: args[0]}
 		res := p.Remove()
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}
@@ -101,7 +101,7 @@ var projectUpdateCmd = &cobra.Command{
 			}
 		})
 		res := p.Update(newData)
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}
@@ -117,7 +117,7 @@ var projectViewCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		p := projects.Project{ProjectId: args[0]}
 		data, res := p.Get()
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}
@@ -145,7 +145,7 @@ var projectListAllCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		c := category.Category{Shorthand: args[0]}
 		data, res := projects.GetProjects(c)
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}
@@ -165,7 +165,7 @@ var projectEditCmd = &cobra.Command{
 		defaultEditor := os.Getenv("EDITOR")
 		p := projects.Project{ProjectId: args[0]}
 		data, res := p.GetField([]string{"path"})
-		if res.Status != 200 {
+		if res.Error != nil {
 			fmt.Printf("Error: %s\n", res.Message)
 			return
 		}

@@ -145,7 +145,7 @@ func (p *Project) Get() (map[string]any, responses.Response) {
 	if resp.Error != nil {
 		return map[string]any{}, resp
 	}
-	data, err := db.DB.QueryLimit("projects", []string{}, map[string]any{"id": p.Id, "category": p.Category}, 1)
+	data, err := db.DB.QueryLimit("projects", []string{}, map[string]any{"shorthand": p.ProjectId, "category": p.Category}, 1)
 	if err != nil {
 		return map[string]any{}, responses.Response{
 			Message: err.Error(),

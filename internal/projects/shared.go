@@ -44,7 +44,8 @@ func (p *Project) checkIfCategoryExists() responses.Response {
 
 }
 
-func (p Project) makeConditions() (conditions map[string]any) {
+func (p Project) makeConditions() map[string]any {
+	conditions := make(map[string]any)
 	if p.ProjectId != "" {
 		conditions["shorthand"] = p.ProjectId
 	}
