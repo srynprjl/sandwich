@@ -10,6 +10,7 @@ import (
 )
 
 func Init(lang string, p projects.Project, dependencies []string) {
+
 	exists, _ := p.Exists()
 	if !exists {
 		fmt.Println("Project not found! creating a new Project.")
@@ -74,7 +75,9 @@ func Init(lang string, p projects.Project, dependencies []string) {
 	case "python", "py":
 		InitPython(data, dependencies)
 	case "js", "javascript":
-	// code here
+		InitJS(data, dependencies[0], "js")
+	case "ts", "typescript":
+		InitJS(data, dependencies[0], "ts")
 	case "java":
 	// code here
 	case "kotlin", "kt":
