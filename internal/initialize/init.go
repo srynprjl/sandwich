@@ -32,11 +32,13 @@ func Init(lang string, p projects.Project) {
 		c = category.Category{UID: cats}
 		cat := c.ID
 		data, resp := c.GetField([]string{"id"})
-		if resp.Error != nil {
+
+		if resp.Error != nil || len(data) == 0 {
 			fmt.Println(resp.Message)
 			return
 		}
-		cat = int(data["id"].(int64))
+		// fmt.Print(data["id"])
+		cat = int(data["id"].(int64)) // error here if category doesnt exist
 		mapData["name"] = name
 		mapData["shorthand"] = shorthand
 		mapData["category"] = cat
@@ -59,7 +61,7 @@ func Init(lang string, p projects.Project) {
 		p.Update(map[string]any{"path": path})
 	}
 
-	if path == config.Conf.ProjectLocation || path == "" {
+	if path == config.Conf.ProjectLocation || path == "/" {
 		path = config.Conf.ProjectLocation + data["name"].(string) + "/"
 		// update db tables
 		p.Update(map[string]any{"path": path})
@@ -76,6 +78,6 @@ func Init(lang string, p projects.Project) {
 	case "kotlin", "kt":
 	// code here
 	case "python", "py":
-		// code here
+		InitPython(data)
 	}
 }

@@ -2,21 +2,30 @@ package initialize
 
 import (
 	"fmt"
+	"html/template"
 	"os"
 	"os/exec"
+	"path"
 )
 
+const goMainTemplate = `package main
+import "fmt"
+func main() {
+	fmt.Println("This project was created using Sandwich")
+}
+`
+
 func InitGo(project_data map[string]any) {
-	file := project_data["path"].(string) + ".sandwich_initialized"
-	_, fileErr := os.Stat(file)
-	if !os.IsNotExist(fileErr) {
-		fmt.Println("Error: project already initialized")
+	projectPath := path.Join("cmd", project_data["name"].(string))
+	filePath := path.Join(projectPath, "main.go")
+
+	initiated := checkProjectInitiated(project_data["path"].(string))
+	if initiated {
+		fmt.Println("The project files already exist!!! ")
 		return
 	}
-	os.MkdirAll(project_data["path"].(string), 0700)
-	_, err := exec.LookPath("go")
-	if err != nil {
-		fmt.Println("Golang not found in PATH!!! Please download the toolchain")
+	dependencies := checkDependencies("go")
+	if !dependencies {
 		return
 	}
 	var moduleName string
@@ -29,26 +38,29 @@ func InitGo(project_data map[string]any) {
 	}
 
 	os.Chdir(project_data["path"].(string))
-	os.Create(".sandwich_initialized")
 	goMod := exec.Command("go", "mod", "init", moduleName)
 	goErr := goMod.Run()
 	if goErr != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error:", goErr)
 	}
-	os.MkdirAll("./cmd/"+project_data["name"].(string), 0700)
-	fil, filErr := os.Create("./cmd/" + project_data["name"].(string) + "/main.go")
+	os.Create(".stack")
+	os.MkdirAll(projectPath, 0700)
+	fil, filErr := os.Create(filePath)
 	if filErr != nil {
 		fmt.Println("Error:", filErr.Error())
 		return
 	}
-	// temporary solution until i use git to write templates idk or find a better way
-	fil.WriteString(`package main
+	tmpl, err := template.New("main").Parse(goMainTemplate)
+	if err != nil {
+		fmt.Printf("Template error: %v\n", err)
+		return
+	}
 
-func main(){
-	print("This project was created using Sandwich")
-}`)
+	err = tmpl.Execute(fil, "")
+	if err != nil {
+		fmt.Printf("Execution error: %v\n", err)
+		return
+	}
 	fil.Close()
-	// Initialize a git repository
-	
 
 }

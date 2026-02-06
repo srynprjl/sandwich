@@ -114,7 +114,7 @@ func (c *Category) GetField(field []string) (map[string]any, responses.Response)
 		return map[string]any{}, responses.Response{Status: 500, Message: err.Error(), Error: err}
 	}
 	if len(data) == 0 {
-		return map[string]any{}, responses.Response{Status: 200, Message: "No field found.", Error: nil}
+		return map[string]any{}, responses.Response{Status: 200, Message: "No field found with that ID.", Error: nil}
 	}
 	return data[0], responses.Response{
 		Status:  200,
