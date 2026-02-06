@@ -27,3 +27,9 @@ func checkDependencies(dependencies ...string) bool {
 	}
 	return flag
 }
+
+func runCommand(cmd string, args ...string) error {
+	com := exec.Command(cmd, args...)
+	err := com.Run()
+	return err
+}

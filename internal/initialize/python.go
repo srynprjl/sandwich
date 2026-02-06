@@ -3,8 +3,10 @@ package initialize
 import (
 	"fmt"
 	"os"
-	"os/exec"
 )
+
+// TODO:
+// way to initialize a python project (for fastAPI, data science, flask, django, etc )
 
 func InitPython(projectData map[string]any, dependencies []string) {
 	initiated := checkProjectInitiated(projectData["path"].(string))
@@ -23,13 +25,11 @@ func InitPython(projectData map[string]any, dependencies []string) {
 
 	os.Chdir(projectData["path"].(string))
 	os.Create(".stack")
-	uv := exec.Command("uv", "init")
-	err := uv.Run()
+	err := runCommand("uv", "init")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	uv = exec.Command("uv", "venv")
-	err = uv.Run()
+	err = runCommand("uv", "venv")
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -37,8 +37,7 @@ func InitPython(projectData map[string]any, dependencies []string) {
 		fmt.Println("Installing dependencies... ")
 		args := []string{"add"}
 		args = append(args, dependencies...)
-		uv = exec.Command("uv", args...)
-		err = uv.Run()
+		err = runCommand("uv", args...)
 		if err != nil {
 			fmt.Println(err.Error())
 		}

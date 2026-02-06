@@ -71,13 +71,15 @@ func Init(lang string, p projects.Project, dependencies []string) {
 	switch lang {
 	case "go", "golang":
 		InitGo(data)
+	case "python", "py":
+		InitPython(data, dependencies)
 	case "js", "javascript":
 	// code here
 	case "java":
 	// code here
 	case "kotlin", "kt":
-	// code here
-	case "python", "py":
-		InitPython(data, dependencies)
+		// code here
+	default:
+		fmt.Println("should reach here")
 	}
 }

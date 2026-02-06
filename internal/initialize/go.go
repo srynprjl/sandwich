@@ -15,6 +15,9 @@ func main() {
 }
 `
 
+// TODO:
+// basic templates such as Gin, Gorilla Mux etc
+
 func InitGo(project_data map[string]any) {
 	projectPath := path.Join("cmd", project_data["name"].(string))
 	filePath := path.Join(projectPath, "main.go")
